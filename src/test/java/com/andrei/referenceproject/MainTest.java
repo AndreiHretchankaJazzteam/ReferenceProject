@@ -10,4 +10,16 @@ public class MainTest {
 
         assertTrue(true);
     }
+
+    @Test
+    public void updateTest2() {
+
+        assertTrue(true);
+    }
+
+    @Test
+    public void updateTest3() {
+
+        assertTrue(false);
+    }
 }
