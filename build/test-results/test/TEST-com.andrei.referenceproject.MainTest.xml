@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.andrei.referenceproject.MainTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-07-05T12:07:25" hostname="ANDREIHRETCHANK" time="0.018">
+  <properties/>
+  <testcase name="updateTest()" classname="com.andrei.referenceproject.MainTest" time="0.018"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
