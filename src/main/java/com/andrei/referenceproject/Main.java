@@ -1,8 +1,11 @@
 package com.andrei.referenceproject;
 
+import com.andrei.referenceproject.gui.frame.MainFrame;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
-        System.out.println("Hello world!");
+       new MainFrame();
+//       new TodoFrame();
+//       new PriorityFrame();
     }
 }
