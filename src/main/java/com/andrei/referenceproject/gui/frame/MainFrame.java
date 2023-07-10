@@ -3,7 +3,6 @@ package com.andrei.referenceproject.gui.frame;
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
-import com.andrei.referenceproject.gui.model.PriorityComboBoxModelItem;
 import com.andrei.referenceproject.gui.model.TodoTableModel;
 import com.github.lgooddatepicker.tableeditors.DateTableEditor;
 
@@ -19,6 +18,9 @@ public class MainFrame extends JFrame {
     private static final String FRAME_TITLE = "Reference project";
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
+    private final List<Todo> todos = new ArrayList<>();
+    private final List<Priority> priorities = new ArrayList<>();
+    private final JComboBox<Priority> priorityComboBox = new JComboBox<>();
     private JPanel rootPanel;
     private JTable todoTable;
     private JButton addButton;
@@ -28,11 +30,14 @@ public class MainFrame extends JFrame {
     private JButton moveUpButton;
     private JButton moveDownButton;
 
-    private final List<Todo> todos = new ArrayList<>();
-    private final List<Priority> priorities = new ArrayList<>();
-    private final JComboBox<PriorityComboBoxModelItem> priorityComboBox = new JComboBox<>();
-
     public MainFrame() {
+        initPanel();
+        generatePriorityAndTodoList();
+        initTableData();
+        addListeners();
+    }
+
+    private void initPanel() {
         setTitle(FRAME_TITLE);
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
         setResizable(false);
@@ -40,16 +45,12 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
         setContentPane(rootPanel);
         setVisible(true);
-
-        generatePriorityAndTodoList();
-        initTableData();
-        addListeners();
     }
 
     private void initTableData() {
         PriorityComboBoxModel prioritiesModel = new PriorityComboBoxModel(priorities);
         priorityComboBox.setModel(prioritiesModel);
-        TodoTableModel tableModel = new TodoTableModel(todos, prioritiesModel);
+        TodoTableModel tableModel = new TodoTableModel(todos);
         todoTable.setModel(tableModel);
         decorateTable();
     }
@@ -68,14 +69,12 @@ public class MainFrame extends JFrame {
     }
 
     private void addAddButtonListener() {
-        addButton.addActionListener(e -> new TodoFrame());
+        addButton.addActionListener(e -> new TodoFrame(priorities));
     }
-
 
     private void addPriorityButtonListener() {
-        priorityButton.addActionListener(e -> new PriorityFrame());
+        priorityButton.addActionListener(e -> new PriorityFrame(priorities));
     }
-
 
     private void generatePriorityAndTodoList() {
         for (int i = 0; i < 5; i++) {

@@ -5,17 +5,13 @@ import com.andrei.referenceproject.entity.Priority;
 import javax.swing.*;
 import javax.swing.event.ListDataListener;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class PriorityComboBoxModel implements ComboBoxModel<PriorityComboBoxModelItem> {
-    private final List<PriorityComboBoxModelItem> items;
-
-    private PriorityComboBoxModelItem selectedItem;
+public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
+    private final List<Priority> priorities;
+    private Priority selectedPriority;
 
     public PriorityComboBoxModel(List<Priority> priorities) {
-        this.items = priorities.stream()
-                .map(PriorityComboBoxModelItem::new)
-                .collect(Collectors.toList());
+        this.priorities = priorities;
     }
 
     @Override
@@ -28,28 +24,21 @@ public class PriorityComboBoxModel implements ComboBoxModel<PriorityComboBoxMode
 
     @Override
     public void setSelectedItem(Object anItem) {
-        selectedItem = (PriorityComboBoxModelItem) anItem;
+        selectedPriority = (Priority) anItem;
     }
 
     @Override
     public Object getSelectedItem() {
-        return selectedItem;
+        return selectedPriority;
     }
 
     @Override
     public int getSize() {
-        return items.size();
+        return priorities.size();
     }
 
     @Override
-    public PriorityComboBoxModelItem getElementAt(int index) {
-        return items.get(index);
-    }
-
-    public PriorityComboBoxModelItem getPriorityComboBoxModelItem(Priority priority) {
-        return items.stream()
-                .filter(item -> item.getPriority().equals(priority))
-                .findFirst()
-                .orElse(items.get(0));
+    public Priority getElementAt(int index) {
+        return priorities.get(index);
     }
 }

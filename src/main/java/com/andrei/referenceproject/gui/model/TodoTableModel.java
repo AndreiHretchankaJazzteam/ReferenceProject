@@ -1,5 +1,6 @@
 package com.andrei.referenceproject.gui.model;
 
+import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
 
 import javax.swing.table.AbstractTableModel;
@@ -22,10 +23,7 @@ public class TodoTableModel extends AbstractTableModel {
     public static final int COLUMN_INDEX_DESCRIPTION = 1;
     public static final int COLUMN_INDEX_DATE = 2;
     public static final int COLUMN_INDEX_PRIORITY = 3;
-
     private final List<Todo> todos;
-    private final PriorityComboBoxModel prioritiesModel;
-
 
     static {
         COLUMNS.put(COLUMN_INDEX_TITLE, COLUMN_NAME_TITLE);
@@ -34,9 +32,8 @@ public class TodoTableModel extends AbstractTableModel {
         COLUMNS.put(COLUMN_INDEX_PRIORITY, COLUMN_NAME_PRIORITY);
     }
 
-    public TodoTableModel(List<Todo> todos, PriorityComboBoxModel prioritiesModel) {
+    public TodoTableModel(List<Todo> todos) {
         this.todos = new ArrayList<>(todos);
-        this.prioritiesModel = prioritiesModel;
     }
 
     @Override
@@ -58,7 +55,7 @@ public class TodoTableModel extends AbstractTableModel {
     public Class<?> getColumnClass(int columnIndex) {
         Class<?> columnClass = switch (columnIndex) {
             case COLUMN_INDEX_DATE -> LocalDate.class;
-            case COLUMN_INDEX_PRIORITY -> PriorityComboBoxModelItem.class;
+            case COLUMN_INDEX_PRIORITY -> Priority.class;
             default -> String.class;
         };
         return columnClass;
@@ -76,7 +73,7 @@ public class TodoTableModel extends AbstractTableModel {
             case COLUMN_INDEX_TITLE -> todo.getName();
             case COLUMN_INDEX_DESCRIPTION -> todo.getDescription();
             case COLUMN_INDEX_DATE -> todo.getDate();
-            case COLUMN_INDEX_PRIORITY -> prioritiesModel.getPriorityComboBoxModelItem(todo.getPriority());
+            case COLUMN_INDEX_PRIORITY -> todo.getPriority().getName();
             default -> null;
         };
         return valueAt;
@@ -89,7 +86,7 @@ public class TodoTableModel extends AbstractTableModel {
             case COLUMN_INDEX_TITLE -> todo.setName((String) aValue);
             case COLUMN_INDEX_DESCRIPTION -> todo.setDescription((String) aValue);
             case COLUMN_INDEX_DATE -> todo.setDate((LocalDate) aValue);
-            case COLUMN_INDEX_PRIORITY -> todo.setPriority(((PriorityComboBoxModelItem) aValue).getPriority());
+            case COLUMN_INDEX_PRIORITY -> todo.setPriority((Priority) aValue);
         }
     }
 }

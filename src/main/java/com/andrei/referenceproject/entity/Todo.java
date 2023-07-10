@@ -1,5 +1,6 @@
 package com.andrei.referenceproject.entity;
 
+import com.andrei.referenceproject.util.Utils;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -19,10 +20,15 @@ public class Todo {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Todo todo = (Todo) o;
-        return name.equals(todo.name) && description.equals(todo.description) && priority.equals(todo.priority) && date.equals(todo.date);
+        return name.equals(todo.name) && Utils.equalsForNullableField(description, todo.description)
+                && Utils.equalsForNullableField(priority, todo.priority) && Utils.equalsForNullableField(date, todo.date);
     }
 
     @Override
