@@ -1,10 +1,11 @@
 package com.andrei.referenceproject;
 
 
+import com.andrei.referenceproject.gui.frame.MainFrame;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello");
-        System.out.println("Hello");
+        new MainFrame();
 
     }
 }
