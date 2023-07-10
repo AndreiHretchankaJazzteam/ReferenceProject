@@ -22,8 +22,7 @@ public class PriorityFrame extends JFrame {
     public PriorityFrame(List<Priority> priorities) {
         this.priorities = priorities;
         initPanel();
-        PriorityTableModel priorityTableModel = new PriorityTableModel(priorities);
-        priorityTable.setModel(priorityTableModel);
+        initTable();
     }
 
     private void initPanel() {
@@ -34,5 +33,10 @@ public class PriorityFrame extends JFrame {
         setLocationRelativeTo(null);
         setContentPane(rootPanel);
         setVisible(true);
+    }
+
+    private void initTable() {
+        PriorityTableModel priorityTableModel = new PriorityTableModel(priorities);
+        priorityTable.setModel(priorityTableModel);
     }
 }

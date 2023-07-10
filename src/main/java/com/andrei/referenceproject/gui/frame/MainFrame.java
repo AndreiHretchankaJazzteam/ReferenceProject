@@ -88,7 +88,7 @@ public class MainFrame extends JFrame {
             todo.setPriority(priority);
             todo.setDate(LocalDate.now());
             todos.add(todo);
-            priorities.add(priority);
+            //priorities.add(priority);
         }
     }
 }

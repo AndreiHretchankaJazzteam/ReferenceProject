@@ -44,11 +44,7 @@ public class TodoFrame extends JFrame {
     }
 
     private void initPanel() {
-        if (todoToUpdate == null) {
-            setTitle(FRAME_TITLE_CREATE);
-        } else {
-            setTitle(FRAME_TITLE_EDIT);
-        }
+        setTitle(isForEdit() ? FRAME_TITLE_EDIT : FRAME_TITLE_CREATE);
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
         setResizable(false);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -67,5 +63,9 @@ public class TodoFrame extends JFrame {
             datePicker.setDate(todoToUpdate.getDate());
             priorityComboBox.setSelectedItem(todoToUpdate.getPriority());
         }
+    }
+
+    private boolean isForEdit() {
+        return todoToUpdate != null;
     }
 }

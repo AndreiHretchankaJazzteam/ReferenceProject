@@ -7,6 +7,8 @@ import javax.swing.event.ListDataListener;
 import java.util.List;
 
 public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
+    private static final String DEFAULT_NAME = "default priority";
+    private static final Integer DEFAULT_WEIGHT = 1;
     private final List<Priority> priorities;
     private Priority selectedPriority;
 
@@ -24,7 +26,13 @@ public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
 
     @Override
     public void setSelectedItem(Object anItem) {
-        selectedPriority = (Priority) anItem;
+        if (priorities.contains(anItem)) {
+            selectedPriority = (Priority) anItem;
+        } else {
+            selectedPriority = priorities.stream()
+                    .findFirst()
+                    .orElse(new Priority(DEFAULT_NAME, DEFAULT_WEIGHT));
+        }
     }
 
     @Override

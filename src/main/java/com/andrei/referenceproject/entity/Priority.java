@@ -1,10 +1,12 @@
 package com.andrei.referenceproject.entity;
 
+import com.andrei.referenceproject.util.Utils;
 import lombok.*;
 
 import java.util.Objects;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class Priority {
@@ -20,7 +22,7 @@ public class Priority {
             return false;
         }
         Priority priority = (Priority) o;
-        return name.equals(priority.name) && weight.equals(priority.weight);
+        return name.equals(priority.name) && Utils.equalsForNullableField(weight, priority.weight);
     }
 
     @Override
