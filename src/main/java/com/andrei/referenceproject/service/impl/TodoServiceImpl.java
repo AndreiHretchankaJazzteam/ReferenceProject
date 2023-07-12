@@ -41,7 +41,7 @@ public class TodoServiceImpl implements TodoService {
     @Override
     public Todo updateTodo(Long id, Todo todo) {
         todos.stream()
-                .filter(t -> t.getName().equals(todo.getName()) && Objects.equals(t.getId(), id))
+                .filter(t -> t.getName().equals(todo.getName()) && !Objects.equals(t.getId(), id))
                 .findFirst()
                 .ifPresent(t -> {
                     throw new TodoExistedValuesException(TODO_EXISTED_NAME_VALUES_MESSAGE);

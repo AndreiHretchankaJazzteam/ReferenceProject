@@ -3,6 +3,7 @@ package com.andrei.referenceproject.gui.frame;
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
 import com.andrei.referenceproject.exception.InvalidEnteredDataException;
+import com.andrei.referenceproject.exception.TodoExistedValuesException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.gui.model.TodoTableModel;
 import com.andrei.referenceproject.service.PriorityService;
@@ -16,7 +17,7 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.andrei.referenceproject.exception.ExceptionMessages.INVALID_TODO_FIELDS_MESSAGE;
+import static com.andrei.referenceproject.exception.ExceptionMessages.*;
 
 public class TodoFrame extends JFrame {
     private static final String FRAME_TITLE_CREATE = "Create Todo";
@@ -81,14 +82,20 @@ public class TodoFrame extends JFrame {
 
     private void addAcceptButtonListener() {
         acceptButton.addActionListener(e -> {
-            Todo todo = createTodoFromFields();
-            if (todoToUpdate == null) {
-                tableModel.addRow(todoService.saveTodo(todo));
-            } else {
-                todoService.updateTodo(todoToUpdate.getId(), todo);
-                tableModel.updateRow(todo, selectedRow);
+            try {
+                Todo todo = createTodoFromFields();
+                if (todoToUpdate == null) {
+                    tableModel.addRow(todoService.saveTodo(todo));
+                } else {
+                    todoService.updateTodo(todoToUpdate.getId(), todo);
+                    tableModel.updateRow(todo, selectedRow);
+                }
+                dispose();
+            } catch (InvalidEnteredDataException ex) {
+                JOptionPane.showMessageDialog(TodoFrame.this, INVALID_TODO_FIELDS_MESSAGE);
+            } catch (TodoExistedValuesException ex) {
+                JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
             }
-            dispose();
         });
     }
 
