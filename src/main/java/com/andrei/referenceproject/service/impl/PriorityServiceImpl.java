@@ -1,8 +1,8 @@
 package com.andrei.referenceproject.service.impl;
 
 import com.andrei.referenceproject.entity.Priority;
-import com.andrei.referenceproject.exception.PriorityExistedValuesException;
-import com.andrei.referenceproject.exception.PriorityNotFoundException;
+import com.andrei.referenceproject.exception.ComponentExistedValuesException;
+import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.service.PriorityService;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class PriorityServiceImpl implements PriorityService {
                 .filter(p -> p.getName().equals(priority.getName()) || p.getWeight().equals(priority.getWeight()))
                 .findFirst()
                 .ifPresent(p -> {
-                    throw new PriorityExistedValuesException(PRIORITY_EXISTED_VALUES_MESSAGE);
+                    throw new ComponentExistedValuesException(PRIORITY_EXISTED_VALUES_MESSAGE);
                 });
         priority.setId(i);
         i++;
@@ -44,7 +44,7 @@ public class PriorityServiceImpl implements PriorityService {
                 .filter(p -> (p.getName().equals(priority.getName()) || p.getWeight().equals(priority.getWeight())) && !Objects.equals(p.getId(), id))
                 .findFirst()
                 .ifPresent(p -> {
-                    throw new PriorityExistedValuesException(PRIORITY_EXISTED_VALUES_MESSAGE);
+                    throw new ComponentExistedValuesException(PRIORITY_EXISTED_VALUES_MESSAGE);
                 });
         priority.setId(id);
         priorities.stream()
@@ -70,6 +70,6 @@ public class PriorityServiceImpl implements PriorityService {
         return priorities.stream()
                 .filter(p -> Objects.equals(p.getId(), id))
                 .findFirst()
-                .orElseThrow(() -> new PriorityNotFoundException(String.format(PRIORITY_NOT_FOUND_MESSAGE, id)));
+                .orElseThrow(() -> new ComponentNotFoundException(String.format(PRIORITY_NOT_FOUND_MESSAGE, id)));
     }
 }

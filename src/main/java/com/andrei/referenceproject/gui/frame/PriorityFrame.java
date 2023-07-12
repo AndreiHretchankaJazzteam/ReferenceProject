@@ -2,7 +2,7 @@ package com.andrei.referenceproject.gui.frame;
 
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.exception.InvalidEnteredDataException;
-import com.andrei.referenceproject.exception.PriorityExistedValuesException;
+import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.gui.model.PriorityTableModel;
 import com.andrei.referenceproject.service.PriorityService;
@@ -107,7 +107,7 @@ public class PriorityFrame extends JFrame {
                 clearTextFields();
             } catch (InvalidEnteredDataException ex) {
                 JOptionPane.showMessageDialog(PriorityFrame.this, INVALID_PRIORITY_FIELDS_MESSAGE);
-            } catch (PriorityExistedValuesException ex) {
+            } catch (ComponentExistedValuesException ex) {
                 JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
             }
         });
@@ -138,7 +138,7 @@ public class PriorityFrame extends JFrame {
                     clearTextFields();
                 } catch (InvalidEnteredDataException ex) {
                     JOptionPane.showMessageDialog(PriorityFrame.this, INVALID_PRIORITY_FIELDS_MESSAGE);
-                } catch (PriorityExistedValuesException ex) {
+                } catch (ComponentExistedValuesException ex) {
                     JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
                 }
             }

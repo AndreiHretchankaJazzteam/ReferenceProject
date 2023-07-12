@@ -2,8 +2,8 @@ package com.andrei.referenceproject.gui.frame;
 
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
+import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.InvalidEnteredDataException;
-import com.andrei.referenceproject.exception.TodoExistedValuesException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.gui.model.TodoTableModel;
 import com.andrei.referenceproject.service.PriorityService;
@@ -93,7 +93,7 @@ public class TodoFrame extends JFrame {
                 dispose();
             } catch (InvalidEnteredDataException ex) {
                 JOptionPane.showMessageDialog(TodoFrame.this, INVALID_TODO_FIELDS_MESSAGE);
-            } catch (TodoExistedValuesException ex) {
+            } catch (ComponentExistedValuesException ex) {
                 JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
             }
         });

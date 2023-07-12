@@ -1,8 +1,8 @@
 package com.andrei.referenceproject.service.impl;
 
 import com.andrei.referenceproject.entity.Todo;
-import com.andrei.referenceproject.exception.TodoExistedValuesException;
-import com.andrei.referenceproject.exception.TodoNotFoundException;
+import com.andrei.referenceproject.exception.ComponentExistedValuesException;
+import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.service.TodoService;
 
 import java.util.Collections;
@@ -25,7 +25,7 @@ public class TodoServiceImpl implements TodoService {
                 .filter(t -> t.getName().equals(todo.getName()))
                 .findFirst()
                 .ifPresent(t -> {
-                    throw new TodoExistedValuesException(TODO_EXISTED_NAME_VALUES_MESSAGE);
+                    throw new ComponentExistedValuesException(TODO_EXISTED_NAME_VALUES_MESSAGE);
                 });
         todo.setId(i);
         i++;
@@ -44,7 +44,7 @@ public class TodoServiceImpl implements TodoService {
                 .filter(t -> t.getName().equals(todo.getName()) && !Objects.equals(t.getId(), id))
                 .findFirst()
                 .ifPresent(t -> {
-                    throw new TodoExistedValuesException(TODO_EXISTED_NAME_VALUES_MESSAGE);
+                    throw new ComponentExistedValuesException(TODO_EXISTED_NAME_VALUES_MESSAGE);
                 });
         todo.setId(id);
         todos.stream().
@@ -75,6 +75,6 @@ public class TodoServiceImpl implements TodoService {
         return todos.stream()
                 .filter(t -> Objects.equals(t.getId(), id))
                 .findFirst()
-                .orElseThrow(() -> new TodoNotFoundException(String.format(TODO_NOT_FOUND_MESSAGE, id)));
+                .orElseThrow(() -> new ComponentNotFoundException(String.format(TODO_NOT_FOUND_MESSAGE, id)));
     }
 }
