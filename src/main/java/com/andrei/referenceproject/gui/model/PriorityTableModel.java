@@ -10,12 +10,10 @@ import java.util.Map;
 
 public class PriorityTableModel extends AbstractTableModel {
     private static final Map<Integer, String> COLUMNS = new HashMap<>();
-
     private static final String COLUMN_NAME_TITLE = "Title";
     private static final String COLUMN_NAME_DESCRIPTION = "Weight";
     public static final int COLUMN_INDEX_TITLE = 0;
     public static final int COLUMN_INDEX_WEIGHT = 1;
-
     private final List<Priority> priorities;
 
     static {
@@ -26,7 +24,6 @@ public class PriorityTableModel extends AbstractTableModel {
     public PriorityTableModel(List<Priority> priorities) {
         this.priorities = new ArrayList<>(priorities);
     }
-
 
     @Override
     public int getRowCount() {
@@ -62,5 +59,24 @@ public class PriorityTableModel extends AbstractTableModel {
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return false;
+    }
+
+    public void addRow(Priority priority) {
+        priorities.add(priority);
+        fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
+    }
+
+    public void deleteRow(int selectedRow) {
+        priorities.remove(selectedRow);
+        fireTableRowsDeleted(selectedRow, selectedRow);
+    }
+
+    public void updateRow(Priority priority, int index) {
+        priorities.set(index, priority);
+        fireTableRowsUpdated(index, index);
+    }
+
+    public Priority getSelectedPriority(int index) {
+        return priorities.get(index);
     }
 }

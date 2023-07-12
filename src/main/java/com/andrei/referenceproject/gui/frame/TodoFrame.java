@@ -2,20 +2,32 @@ package com.andrei.referenceproject.gui.frame;
 
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
+import com.andrei.referenceproject.exception.InvalidEnteredDataException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
+import com.andrei.referenceproject.gui.model.TodoTableModel;
+import com.andrei.referenceproject.service.PriorityService;
+import com.andrei.referenceproject.service.TodoService;
+import com.andrei.referenceproject.service.impl.PriorityServiceImpl;
+import com.andrei.referenceproject.service.impl.TodoServiceImpl;
 import com.github.lgooddatepicker.components.DatePicker;
 
 import javax.swing.*;
+import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.andrei.referenceproject.exception.ExceptionMessages.INVALID_TODO_FIELDS_MESSAGE;
 
 public class TodoFrame extends JFrame {
     private static final String FRAME_TITLE_CREATE = "Create Todo";
     private static final String FRAME_TITLE_EDIT = "Edit Todo";
     private static final int FRAME_WIDTH = 600;
     private static final int FRAME_HEIGHT = 500;
-    private final List<Priority> priorities;
+    private final PriorityService priorityService;
+    private final TodoService todoService;
+    private final TodoTableModel tableModel;
+    private DatePicker datePicker;
+    private int selectedRow;
     private JPanel rootPanel;
     private JButton acceptButton;
     private JTextArea descriptionTextArea;
@@ -25,22 +37,27 @@ public class TodoFrame extends JFrame {
     private JButton dateButton;
     private Todo todoToUpdate;
 
-    public TodoFrame(List<Priority> priorities) {
-        this.priorities = priorities;
+    public TodoFrame(List<Priority> priorities, List<Todo> todos, TodoTableModel tableModel) {
+        this.tableModel = tableModel;
+        todoService = new TodoServiceImpl(todos);
+        priorityService = new PriorityServiceImpl(priorities);
         initFrame();
     }
 
-    public TodoFrame(Todo todo, List<Priority> priorities) {
-        this.priorities = priorities;
+    public TodoFrame(Todo todo, int selectedRow, List<Priority> priorities, List<Todo> todos, TodoTableModel tableModel) {
+        todoService = new TodoServiceImpl(todos);
+        priorityService = new PriorityServiceImpl(priorities);
         this.todoToUpdate = todo;
+        this.selectedRow = selectedRow;
+        this.tableModel = tableModel;
         initFrame();
     }
 
     private void initFrame() {
         initPanel();
-        prioritiesModel = new PriorityComboBoxModel(priorities);
-        priorityComboBox.setModel(prioritiesModel);
+        initPriorities();
         initFields();
+        addListeners();
     }
 
     private void initPanel() {
@@ -53,8 +70,53 @@ public class TodoFrame extends JFrame {
         setVisible(true);
     }
 
+    private void initPriorities() {
+        prioritiesModel = new PriorityComboBoxModel(priorityService.findAllPriorities());
+        priorityComboBox.setModel(prioritiesModel);
+    }
+
+    private void addListeners() {
+        addAcceptButtonListener();
+    }
+
+    private void addAcceptButtonListener() {
+        acceptButton.addActionListener(e -> {
+            Todo todo = createTodoFromFields();
+            if (todoToUpdate == null) {
+                tableModel.addRow(todoService.saveTodo(todo));
+            } else {
+                todoService.updateTodo(todoToUpdate.getId(), todo);
+                tableModel.updateRow(todo, selectedRow);
+            }
+            dispose();
+        });
+    }
+
+    private Todo createTodoFromFields() {
+        validateTodoFields();
+        Todo todo = new Todo();
+        todo.setName(nameTextField.getText());
+        todo.setDescription(descriptionTextArea.getText());
+        todo.setDate(datePicker.getDate());
+        todo.setPriority(prioritiesModel.getSelectedPriority());
+        return todo;
+    }
+
+    private void validateTodoFields() {
+        boolean isValid = true;
+        nameTextField.setBackground(Color.WHITE);
+        if (nameTextField.getText().isEmpty()) {
+            isValid = false;
+            nameTextField.setBackground(Color.PINK);
+        }
+
+        if (!isValid) {
+            throw new InvalidEnteredDataException(INVALID_TODO_FIELDS_MESSAGE);
+        }
+    }
+
     private void initFields() {
-        DatePicker datePicker = new DatePicker();
+        datePicker = new DatePicker();
         datePicker.setDate(LocalDate.now());
         dateButton.add(datePicker);
         if (todoToUpdate != null) {

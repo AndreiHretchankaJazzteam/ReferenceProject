@@ -10,6 +10,7 @@ import java.util.Objects;
 @Getter
 @Setter
 public class Priority {
+    private Long id;
     private String name;
     private Integer weight;
 
@@ -22,12 +23,12 @@ public class Priority {
             return false;
         }
         Priority priority = (Priority) o;
-        return name.equals(priority.name) && Utils.equalsForNullableField(weight, priority.weight);
+        return Utils.equalsForNullableField(id, priority.id) && name.equals(priority.name) && Utils.equalsForNullableField(weight, priority.weight);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, weight);
+        return Objects.hash(id, name, weight);
     }
 
     @Override
