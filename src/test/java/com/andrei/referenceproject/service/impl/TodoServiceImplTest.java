@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TodoServiceImplTest {
+    private static final Long FIRST_ID = -1L;
+    private static final Long SECOND_ID = -2L;
     private TodoService todoService;
 
     @BeforeEach
@@ -56,6 +58,16 @@ class TodoServiceImplTest {
     }
 
     @ParameterizedTest
+    @MethodSource("prepareAllTodosWithNewTodo")
+    void findAllTodosWithNewTodoTest(List<Todo> expectedTodos, Todo todo) {
+        todoService.saveTodo(todo);
+
+        List<Todo> actualTodos = todoService.findAllTodos();
+
+        assertEquals(expectedTodos, actualTodos);
+    }
+
+    @ParameterizedTest
     @MethodSource("prepareFirstTodoToUpdate")
     void updateTodoTest(Todo expectedTodo) {
         Todo actualTodo = todoService.updateTodo(expectedTodo.getId(), expectedTodo);
@@ -80,16 +92,31 @@ class TodoServiceImplTest {
 
     @Test
     void deleteTodoTest() {
-        Long id = -1L;
+        Long id = FIRST_ID;
         todoService.deleteTodo(id);
 
         assertThrows(ComponentNotFoundException.class, () -> todoService.findTodoById(id));
     }
 
+    @Test
+    void deleteTodoWithNonExistentIdTest() {
+        Long nonExistentId = 22L;
+
+        assertThrows(ComponentNotFoundException.class, () -> todoService.deleteTodo(nonExistentId));
+    }
+
+    @ParameterizedTest
+    @MethodSource("prepareFirstTodoToUpdate")
+    void updateTodoWithNonExistentIdTest(Todo todo) {
+        Long nonExistentId = 22L;
+
+        assertThrows(ComponentNotFoundException.class, () -> todoService.updateTodo(nonExistentId, todo));
+    }
+
     @ParameterizedTest
     @MethodSource("prepareFirstTodo")
     void findTodoByIdTest(Todo expectedTodo) {
-        Todo actualTodo = todoService.findTodoById(-1L);
+        Todo actualTodo = todoService.findTodoById(FIRST_ID);
 
         assertEquals(expectedTodo, actualTodo);
     }
@@ -111,6 +138,19 @@ class TodoServiceImplTest {
                 createFirstTodo(),
                 createSecondTodo()
         )));
+    }
+
+    public static Stream<Arguments> prepareAllTodosWithNewTodo() {
+        Todo todo = new Todo();
+        todo.setName("Third");
+        todo.setDescription("Third");
+        todo.setPriority(new Priority(-3L, "Third priority", 3));
+        todo.setDate(LocalDate.of(2023, 7, 12));
+        return Stream.of(Arguments.of(List.of(
+                createFirstTodo(),
+                createSecondTodo(),
+                createThirdTodo()
+        ), todo));
     }
 
     public static Stream<Arguments> prepareFirstTodoToUpdate() {
@@ -138,10 +178,10 @@ class TodoServiceImplTest {
 
     private static Todo createFirstTodo() {
         return new Todo(
-                -1L,
+                FIRST_ID,
                 "First",
                 "First",
-                new Priority(-1L, "First priority", 1),
+                new Priority(FIRST_ID, "First priority", 1),
                 LocalDate.of(2023, 7, 12)
 
         );
@@ -149,10 +189,20 @@ class TodoServiceImplTest {
 
     private static Todo createSecondTodo() {
         return new Todo(
-                -2L,
+                SECOND_ID,
                 "Second",
                 "Second",
-                new Priority(-2L, "Second priority", 2),
+                new Priority(SECOND_ID, "Second priority", 2),
+                LocalDate.of(2023, 7, 12)
+        );
+    }
+
+    private static Todo createThirdTodo() {
+        return new Todo(
+                1L,
+                "Third",
+                "Third",
+                new Priority(-3L, "Third priority", 3),
                 LocalDate.of(2023, 7, 12)
         );
     }

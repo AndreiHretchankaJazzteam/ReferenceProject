@@ -12,11 +12,12 @@ import static com.andrei.referenceproject.exception.ExceptionMessages.PRIORITY_E
 import static com.andrei.referenceproject.exception.ExceptionMessages.PRIORITY_NOT_FOUND_MESSAGE;
 
 public class PriorityServiceImpl implements PriorityService {
-    private static Long i = 1L;
+    private static Long i;
     private final List<Priority> priorities;
 
     public PriorityServiceImpl(List<Priority> priorities) {
         this.priorities = priorities;
+        i = 1L;
     }
 
     @Override
@@ -46,6 +47,7 @@ public class PriorityServiceImpl implements PriorityService {
                 .ifPresent(p -> {
                     throw new ComponentExistedValuesException(PRIORITY_EXISTED_VALUES_MESSAGE);
                 });
+        findPriorityById(id);
         priority.setId(id);
         priorities.stream()
                 .filter(p -> Objects.equals(p.getId(), priority.getId()))
@@ -59,6 +61,7 @@ public class PriorityServiceImpl implements PriorityService {
 
     @Override
     public void deletePriority(Long id) {
+        findPriorityById(id);
         priorities.stream()
                 .filter(p -> Objects.equals(p.getId(), id))
                 .findFirst()

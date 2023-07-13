@@ -17,6 +17,8 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PriorityServiceImplTest {
+    private static final Long FIRST_ID = -1L;
+    private static final Long SECOND_ID = -2L;
     private PriorityService priorityService;
 
     @BeforeEach
@@ -30,7 +32,7 @@ class PriorityServiceImplTest {
     @ParameterizedTest
     @MethodSource("preparePriorityToSave")
     void savePriorityTest(Priority priority) {
-        Priority expectedPriority = new Priority(1L, "Third", 3);
+        Priority expectedPriority = createThirdPriority();
 
         Priority actualPriority = priorityService.savePriority(priority);
 
@@ -58,6 +60,16 @@ class PriorityServiceImplTest {
     }
 
     @ParameterizedTest
+    @MethodSource({"prepareAllPrioritiesWithNewPriority"})
+    void findAllPrioritiesWithNewPriorityTest(List<Priority> expectedPriorities, Priority priority) {
+        priorityService.savePriority(priority);
+
+        List<Priority> actualPriorities = priorityService.findAllPriorities();
+
+        assertEquals(expectedPriorities, actualPriorities);
+    }
+
+    @ParameterizedTest
     @MethodSource("prepareFirstPriorityToUpdate")
     void updatePriorityTest(Priority expectedPriority) {
         Priority actualPriority = priorityService.updatePriority(expectedPriority.getId(), expectedPriority);
@@ -79,18 +91,44 @@ class PriorityServiceImplTest {
 
     @Test
     void deletePriorityTest() {
-        Long id = -1L;
+        Long id = FIRST_ID;
         priorityService.deletePriority(id);
 
         assertThrows(ComponentNotFoundException.class, () -> priorityService.findPriorityById(id));
     }
 
+    @Test
+    void deletePriorityWithNonExistentIdTest() {
+        Long nonExistentId = 22L;
+
+        assertThrows(ComponentNotFoundException.class, () -> priorityService.deletePriority(nonExistentId));
+    }
+
+    @ParameterizedTest
+    @MethodSource("prepareFirstPriorityToUpdate")
+    void updatePriorityWithNonExistentIdTest(Priority priority) {
+        Long nonExistentId = 22L;
+
+        assertThrows(ComponentNotFoundException.class, () -> priorityService.updatePriority(nonExistentId, priority));
+    }
+
     @ParameterizedTest
     @MethodSource("prepareFirstPriority")
     void findPriorityByIdTest(Priority expectedPriority) {
-        Priority actualPriority = priorityService.findPriorityById(-1L);
+        Priority actualPriority = priorityService.findPriorityById(FIRST_ID);
 
         assertEquals(expectedPriority, actualPriority);
+    }
+
+    public static Stream<Arguments> prepareAllPrioritiesWithNewPriority() {
+        Priority priority = new Priority();
+        priority.setName("Third");
+        priority.setWeight(3);
+        return Stream.of(Arguments.of(List.of(
+                createFirstPriority(),
+                createSecondPriority(),
+                createThirdPriority()
+        ), priority));
     }
 
     public static Stream<Arguments> preparePriorityToSave() {
@@ -141,11 +179,16 @@ class PriorityServiceImplTest {
     public static Stream<Arguments> prepareFirstPriority() {
         return Stream.of(Arguments.of(createFirstPriority()));
     }
+
     private static Priority createFirstPriority() {
-        return new Priority(-1L, "First", 1);
+        return new Priority(FIRST_ID, "First", 1);
     }
 
     private static Priority createSecondPriority() {
-        return new Priority(-2L, "Second", 2);
+        return new Priority(SECOND_ID, "Second", 2);
+    }
+
+    private static Priority createThirdPriority() {
+        return new Priority(1L, "Third", 3);
     }
 }

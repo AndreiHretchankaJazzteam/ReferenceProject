@@ -17,6 +17,7 @@ public class TodoServiceImpl implements TodoService {
 
     public TodoServiceImpl(List<Todo> todos) {
         this.todos = todos;
+        i = 1L;
     }
 
     @Override
@@ -46,6 +47,7 @@ public class TodoServiceImpl implements TodoService {
                 .ifPresent(t -> {
                     throw new ComponentExistedValuesException(TODO_EXISTED_NAME_VALUES_MESSAGE);
                 });
+        findTodoById(id);
         todo.setId(id);
         todos.stream().
                 filter(t -> Objects.equals(t.getId(), todo.getId()))
@@ -64,6 +66,7 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     public void deleteTodo(Long id) {
+        findTodoById(id);
         todos.stream().
                 filter(t -> Objects.equals(t.getId(), id))
                 .findFirst()
