@@ -6,19 +6,14 @@ import com.andrei.referenceproject.entity.Todo;
 import javax.swing.table.AbstractTableModel;
 import java.time.LocalDate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TodoTableModel extends AbstractTableModel {
     private static final Map<Integer, String> COLUMNS = new HashMap<>();
-
     private static final String COLUMN_NAME_TITLE = "Title";
     private static final String COLUMN_NAME_DESCRIPTION = "Description";
     private static final String COLUMN_NAME_DATE = "Date";
     private static final String COLUMN_NAME_PRIORITY = "Priority";
-
     public static final int COLUMN_INDEX_TITLE = 0;
     public static final int COLUMN_INDEX_DESCRIPTION = 1;
     public static final int COLUMN_INDEX_DATE = 2;
@@ -69,13 +64,17 @@ public class TodoTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Todo todo = todos.get(rowIndex);
-        Object valueAt = switch (columnIndex) {
-            case COLUMN_INDEX_TITLE -> todo.getName();
-            case COLUMN_INDEX_DESCRIPTION -> todo.getDescription();
-            case COLUMN_INDEX_DATE -> todo.getDate();
-            case COLUMN_INDEX_PRIORITY -> todo.getPriority().getName();
-            default -> null;
-        };
+        Object valueAt = null;
+        switch (columnIndex) {
+            case COLUMN_INDEX_TITLE -> valueAt = todo.getName();
+            case COLUMN_INDEX_DESCRIPTION -> valueAt = todo.getDescription();
+            case COLUMN_INDEX_DATE -> valueAt = todo.getDate();
+            case COLUMN_INDEX_PRIORITY -> {
+                if (todo.getPriority() != null) {
+                    valueAt = todo.getPriority().getName();
+                }
+            }
+        }
         return valueAt;
     }
 
@@ -88,5 +87,29 @@ public class TodoTableModel extends AbstractTableModel {
             case COLUMN_INDEX_DATE -> todo.setDate((LocalDate) aValue);
             case COLUMN_INDEX_PRIORITY -> todo.setPriority((Priority) aValue);
         }
+    }
+
+    public void addRow(Todo todo) {
+        todos.add(todo);
+        fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
+    }
+
+    public void updateRow(Todo todo, int index) {
+        todos.set(index, todo);
+        fireTableRowsUpdated(index, index);
+    }
+
+    public Todo getSelectedTodo(int index) {
+        return todos.get(index);
+    }
+
+    public void deleteRow(int selectedRow) {
+        todos.remove(selectedRow);
+        fireTableRowsDeleted(selectedRow, selectedRow);
+    }
+
+    public void swapRow(int selectedRow, int rowTo) {
+        Collections.swap(this.todos, selectedRow, rowTo);
+        fireTableRowsUpdated(selectedRow, rowTo);
     }
 }

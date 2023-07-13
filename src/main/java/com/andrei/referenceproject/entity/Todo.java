@@ -7,15 +7,15 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @ToString
 public class Todo {
+    private Long id;
     private String name;
     private String description;
-
     private Priority priority;
-
     private LocalDate date;
 
     @Override
@@ -27,12 +27,12 @@ public class Todo {
             return false;
         }
         Todo todo = (Todo) o;
-        return name.equals(todo.name) && Utils.equalsForNullableField(description, todo.description)
+        return Utils.equalsForNullableField(id, todo.id) && name.equals(todo.name) && Utils.equalsForNullableField(description, todo.description)
                 && Utils.equalsForNullableField(priority, todo.priority) && Utils.equalsForNullableField(date, todo.date);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, priority, date);
+        return Objects.hash(id, name, description, priority, date);
     }
 }
