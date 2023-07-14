@@ -1,18 +1,32 @@
 package com.andrei.referenceproject.entity;
 
 import com.andrei.referenceproject.util.Utils;
-import lombok.*;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.util.List;
 import java.util.Objects;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
+@Entity
+@Table(name = "priority")
 public class Priority {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, unique = true)
     private String name;
+    @Column(unique = true)
     private Integer weight;
+
+    @OneToMany(mappedBy = "priority")
+    List<Todo> todos;
 
     @Override
     public boolean equals(Object o) {

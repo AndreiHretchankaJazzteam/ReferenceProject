@@ -1,6 +1,7 @@
 package com.andrei.referenceproject.entity;
 
 import com.andrei.referenceproject.util.Utils;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -11,12 +12,24 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
+@Entity
+@Table(name = "todo")
 public class Todo {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, unique = true)
     private String name;
+    @Column
     private String description;
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "priority_id")
     private Priority priority;
+    @Column(name = "date")
     private LocalDate date;
+
+    @Column(name = "order_number", nullable = false)
+    private Long orderNumber;
 
     @Override
     public boolean equals(Object o) {

@@ -8,9 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
-    private static final String DEFAULT_NAME = "default priority";
-    private static final Integer DEFAULT_WEIGHT = 1;
-    private static final Long DEFAULT_ID = -1L;
     private final List<Priority> priorities;
     private Priority selectedPriority;
 
@@ -28,13 +25,7 @@ public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
 
     @Override
     public void setSelectedItem(Object anItem) {
-        if (priorities.contains(anItem)) {
-            selectedPriority = (Priority) anItem;
-        } else {
-            selectedPriority = priorities.stream()
-                    .findFirst()
-                    .orElse(new Priority(DEFAULT_ID, DEFAULT_NAME, DEFAULT_WEIGHT));
-        }
+        selectedPriority = (Priority) anItem;
     }
 
     @Override
@@ -65,5 +56,15 @@ public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
 
     public void deletePriority(Priority priority) {
         priorities.remove(priority);
+    }
+
+    public void updatePriority(Priority priority) {
+        priorities.stream()
+                .filter(p -> p.getId().equals(priority.getId()))
+                .findFirst()
+                .ifPresent(p -> {
+                    p.setName(priority.getName());
+                    p.setWeight(priority.getWeight());
+                });
     }
 }

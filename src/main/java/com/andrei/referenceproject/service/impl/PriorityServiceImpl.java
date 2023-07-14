@@ -1,78 +1,67 @@
 package com.andrei.referenceproject.service.impl;
 
 import com.andrei.referenceproject.entity.Priority;
+import com.andrei.referenceproject.exception.ComponentDeleteException;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.ComponentNotFoundException;
+import com.andrei.referenceproject.repository.PriorityRepository;
 import com.andrei.referenceproject.service.PriorityService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
-import static com.andrei.referenceproject.exception.ExceptionMessages.PRIORITY_EXISTED_VALUES_MESSAGE;
-import static com.andrei.referenceproject.exception.ExceptionMessages.PRIORITY_NOT_FOUND_MESSAGE;
+import static com.andrei.referenceproject.exception.ExceptionMessages.*;
 
+@Service
 public class PriorityServiceImpl implements PriorityService {
-    private static Long i;
-    private final List<Priority> priorities;
+    private final PriorityRepository priorityRepository;
 
-    public PriorityServiceImpl(List<Priority> priorities) {
-        this.priorities = priorities;
-        i = 1L;
+    @Autowired
+    public PriorityServiceImpl(PriorityRepository priorityRepository) {
+        this.priorityRepository = priorityRepository;
     }
 
     @Override
     public Priority savePriority(Priority priority) {
-        priorities.stream()
-                .filter(p -> p.getName().equals(priority.getName()) || p.getWeight().equals(priority.getWeight()))
-                .findFirst()
-                .ifPresent(p -> {
-                    throw new ComponentExistedValuesException(PRIORITY_EXISTED_VALUES_MESSAGE);
-                });
-        priority.setId(i);
-        i++;
-        priorities.add(priority);
-        return priority;
+        try {
+            return priorityRepository.save(priority);
+        } catch (DataIntegrityViolationException e) {
+            throw new ComponentExistedValuesException(PRIORITY_EXISTED_VALUES_MESSAGE);
+        }
     }
 
     @Override
     public List<Priority> findAllPriorities() {
-        return priorities;
+        return priorityRepository.findAllByOrderByWeightAsc();
     }
 
     @Override
     public Priority updatePriority(Long id, Priority priority) {
-        priorities.stream()
-                .filter(p -> (p.getName().equals(priority.getName()) || p.getWeight().equals(priority.getWeight())) && !Objects.equals(p.getId(), id))
-                .findFirst()
-                .ifPresent(p -> {
-                    throw new ComponentExistedValuesException(PRIORITY_EXISTED_VALUES_MESSAGE);
-                });
-        findPriorityById(id);
-        priority.setId(id);
-        priorities.stream()
-                .filter(p -> Objects.equals(p.getId(), priority.getId()))
-                .findFirst()
-                .ifPresent(p -> {
-                    int index = priorities.indexOf(p);
-                    priorities.set(index, priority);
-                });
-        return priority;
+        try {
+            findPriorityById(id);
+            priority.setId(id);
+            return priorityRepository.save(priority);
+        } catch (DataIntegrityViolationException e) {
+            throw new ComponentExistedValuesException(PRIORITY_EXISTED_VALUES_MESSAGE);
+        }
     }
 
     @Override
     public void deletePriority(Long id) {
-        findPriorityById(id);
-        priorities.stream()
-                .filter(p -> Objects.equals(p.getId(), id))
-                .findFirst()
-                .ifPresent(priorities::remove);
+        try {
+            findPriorityById(id);
+            priorityRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new ComponentDeleteException(DELETE_BEING_USED_PRIORITY_MESSAGE);
+        }
+
     }
 
     @Override
     public Priority findPriorityById(Long id) {
-        return priorities.stream()
-                .filter(p -> Objects.equals(p.getId(), id))
-                .findFirst()
+        return priorityRepository.findById(id)
                 .orElseThrow(() -> new ComponentNotFoundException(String.format(PRIORITY_NOT_FOUND_MESSAGE, id)));
     }
 }

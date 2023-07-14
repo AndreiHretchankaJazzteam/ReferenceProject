@@ -13,7 +13,7 @@ public interface TodoService {
 
     void deleteTodo(Long id);
 
-    void swapTodo(int index1, int index2);
+    void swapTodo(Todo todo1, Todo todo2);
 
     Todo findTodoById(Long id);
 }

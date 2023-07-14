@@ -1,29 +1,28 @@
 package com.andrei.referenceproject.gui.frame;
 
-import com.andrei.referenceproject.service.PriorityService;
-import com.andrei.referenceproject.service.TodoService;
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
+import com.andrei.referenceproject.exception.ComponentExistedValuesException;
+import com.andrei.referenceproject.exception.InvalidEnteredDataException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.gui.model.TodoTableModel;
-import com.andrei.referenceproject.service.impl.PriorityServiceImpl;
-import com.andrei.referenceproject.service.impl.TodoServiceImpl;
+import com.andrei.referenceproject.service.PriorityService;
+import com.andrei.referenceproject.service.TodoService;
 import com.github.lgooddatepicker.tableeditors.DateTableEditor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.swing.*;
 import javax.swing.table.TableColumnModel;
-
 import java.time.LocalDate;
-import java.util.*;
 
+import static com.andrei.referenceproject.exception.ExceptionMessages.INVALID_TODO_FIELDS_MESSAGE;
+import static com.andrei.referenceproject.exception.ExceptionMessages.TODO_EXISTED_NAME_VALUES_MESSAGE;
 import static com.andrei.referenceproject.gui.model.TodoTableModel.COLUMN_INDEX_PRIORITY;
 
 public class MainFrame extends JFrame {
     private static final String FRAME_TITLE = "Reference project";
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
-    private final List<Todo> todos = new ArrayList<>();
-    private final List<Priority> priorities = new ArrayList<>();
     private final TodoService todoService;
     private final PriorityService priorityService;
     private final JComboBox<Priority> priorityComboBox = new JComboBox<>();
@@ -37,12 +36,11 @@ public class MainFrame extends JFrame {
     private JButton moveDownButton;
     private TodoTableModel tableModel;
 
-
-    public MainFrame() {
+    @Autowired
+    public MainFrame(TodoService todoService, PriorityService priorityService) {
+        this.todoService = todoService;
+        this.priorityService = priorityService;
         initPanel();
-        generatePriorityAndTodoList();
-        todoService = new TodoServiceImpl(todos);
-        priorityService = new PriorityServiceImpl(priorities);
         initTableData();
         addListeners();
     }
@@ -63,6 +61,18 @@ public class MainFrame extends JFrame {
         tableModel = new TodoTableModel(todoService.findAllTodos());
         todoTable.setModel(tableModel);
         decorateTable();
+        tableModel.setUpdateValueCallback(todo -> {
+            try {
+                todoService.updateTodo(todo.getId(), todo);
+            } catch (InvalidEnteredDataException ex) {
+                JOptionPane.showMessageDialog(MainFrame.this, INVALID_TODO_FIELDS_MESSAGE);
+            } catch (ComponentExistedValuesException ex) {
+                String oldName = todoService.findTodoById(todo.getId()).getName();
+                todo.setName(oldName);
+                tableModel.updateRow(todo, todoTable.getSelectedRow());
+                JOptionPane.showMessageDialog(MainFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+            }
+        });
     }
 
     private void decorateTable() {
@@ -83,7 +93,7 @@ public class MainFrame extends JFrame {
     }
 
     private void addAddButtonListener() {
-        addButton.addActionListener(e -> new TodoFrame(priorities, todos, tableModel));
+        addButton.addActionListener(e -> new TodoFrame(todoService, priorityService, tableModel));
     }
 
     private void addEditButtonListener() {
@@ -91,7 +101,7 @@ public class MainFrame extends JFrame {
             int selectedRow = todoTable.getSelectedRow();
             if (selectedRow != -1) {
                 Todo todo = tableModel.getSelectedTodo(selectedRow);
-                new TodoFrame(todo, selectedRow, priorities, todos, tableModel);
+                new TodoFrame(todoService, priorityService, todo, selectedRow, tableModel);
             }
         });
     }
@@ -112,7 +122,9 @@ public class MainFrame extends JFrame {
             int selectedRow = todoTable.getSelectedRow();
             int rowTo = selectedRow - 1;
             if (selectedRow > 0) {
-                todoService.swapTodo(selectedRow, rowTo);
+                Todo todoToSwap1 = tableModel.getSelectedTodo(selectedRow);
+                Todo todoToSwap2 = tableModel.getSelectedTodo(rowTo);
+                todoService.swapTodo(todoToSwap1, todoToSwap2);
                 tableModel.swapRow(selectedRow, rowTo);
                 todoTable.changeSelection(rowTo, 0, false, false);
             }
@@ -124,7 +136,9 @@ public class MainFrame extends JFrame {
             int selectedRow = todoTable.getSelectedRow();
             int rowTo = selectedRow + 1;
             if (rowTo < tableModel.getRowCount() && selectedRow != -1) {
-                todoService.swapTodo(selectedRow, rowTo);
+                Todo todoToSwap1 = tableModel.getSelectedTodo(selectedRow);
+                Todo todoToSwap2 = tableModel.getSelectedTodo(rowTo);
+                todoService.swapTodo(todoToSwap1, todoToSwap2);
                 tableModel.swapRow(selectedRow, rowTo);
                 todoTable.changeSelection(rowTo, 0, false, false);
             }
@@ -132,25 +146,6 @@ public class MainFrame extends JFrame {
     }
 
     private void addPriorityButtonListener() {
-        priorityButton.addActionListener(e -> new PriorityFrame(priorities, (PriorityComboBoxModel) priorityComboBox.getModel()));
-    }
-
-    private void generatePriorityAndTodoList() {
-        for (int i = 0; i < 5; i++) {
-            Todo todo = new Todo();
-            Priority priority = new Priority();
-            long id = i - 5;
-            priority.setId(id);
-            priority.setName("1" + i);
-            Integer weight = Integer.valueOf(1) + i;
-            priority.setWeight(weight);
-            todo.setId(id);
-            todo.setName("1" + i);
-            todo.setDescription("1" + i);
-            todo.setPriority(priority);
-            todo.setDate(LocalDate.now());
-            todos.add(todo);
-            priorities.add(priority);
-        }
+        priorityButton.addActionListener(e -> new PriorityFrame(priorityService, (PriorityComboBoxModel) priorityComboBox.getModel(), tableModel));
     }
 }

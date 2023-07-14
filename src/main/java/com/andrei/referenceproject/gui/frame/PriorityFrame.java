@@ -1,20 +1,20 @@
 package com.andrei.referenceproject.gui.frame;
 
 import com.andrei.referenceproject.entity.Priority;
-import com.andrei.referenceproject.exception.InvalidEnteredDataException;
+import com.andrei.referenceproject.exception.ComponentDeleteException;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
+import com.andrei.referenceproject.exception.InvalidEnteredDataException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.gui.model.PriorityTableModel;
+import com.andrei.referenceproject.gui.model.TodoTableModel;
 import com.andrei.referenceproject.service.PriorityService;
-import com.andrei.referenceproject.service.impl.PriorityServiceImpl;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.List;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
-import static com.andrei.referenceproject.exception.ExceptionMessages.INVALID_PRIORITY_FIELDS_MESSAGE;
-import static com.andrei.referenceproject.exception.ExceptionMessages.PRIORITY_EXISTED_VALUES_MESSAGE;
+import static com.andrei.referenceproject.exception.ExceptionMessages.*;
 
 public class PriorityFrame extends JFrame {
     private static final String FRAME_TITLE = "Priority";
@@ -22,6 +22,7 @@ public class PriorityFrame extends JFrame {
     private static final int FRAME_HEIGHT = 300;
     private final PriorityService priorityService;
     private final PriorityComboBoxModel priorityComboBoxModel;
+    private final TodoTableModel todoTableModel;
     private PriorityTableModel priorityTableModel;
     private JPanel rootPanel;
     private JButton addButton;
@@ -31,8 +32,9 @@ public class PriorityFrame extends JFrame {
     private JTextField priorityWeightTextField;
     private JTable priorityTable;
 
-    public PriorityFrame(List<Priority> priorities, PriorityComboBoxModel priorityComboBoxModel) {
-        priorityService = new PriorityServiceImpl(priorities);
+    public PriorityFrame(PriorityService priorityService, PriorityComboBoxModel priorityComboBoxModel, TodoTableModel todoTableModel) {
+        this.todoTableModel = todoTableModel;
+        this.priorityService = priorityService;
         this.priorityComboBoxModel = priorityComboBoxModel;
         initPanel();
         initTable();
@@ -69,7 +71,9 @@ public class PriorityFrame extends JFrame {
                 if (selectedRow != -1) {
                     Priority priority = priorityTableModel.getSelectedPriority(selectedRow);
                     priorityNameTextField.setText(priority.getName());
-                    priorityWeightTextField.setText(priority.getWeight().toString());
+                    if (priority.getWeight() != null) {
+                        priorityWeightTextField.setText(priority.getWeight().toString());
+                    }
                 } else {
                     clearTextFields();
                 }
@@ -117,11 +121,15 @@ public class PriorityFrame extends JFrame {
         deleteButton.addActionListener(e -> {
             int selectedRow = priorityTable.getSelectedRow();
             if (selectedRow != -1) {
-                Priority priority = priorityTableModel.getSelectedPriority(selectedRow);
-                priorityTableModel.deleteRow(selectedRow);
-                priorityComboBoxModel.deletePriority(priority);
-                priorityService.deletePriority(priority.getId());
-                clearTextFields();
+                try {
+                    Priority priority = priorityTableModel.getSelectedPriority(selectedRow);
+                    priorityService.deletePriority(priority.getId());
+                    priorityTableModel.deleteRow(selectedRow);
+                    priorityComboBoxModel.deletePriority(priority);
+                    clearTextFields();
+                } catch (ComponentDeleteException ex) {
+                    JOptionPane.showMessageDialog(PriorityFrame.this, DELETE_BEING_USED_PRIORITY_MESSAGE);
+                }
             }
         });
     }
@@ -134,7 +142,9 @@ public class PriorityFrame extends JFrame {
                     Priority priority = createPriorityFromFields();
                     Priority priorityToUpdate = priorityTableModel.getSelectedPriority(selectedRow);
                     priorityService.updatePriority(priorityToUpdate.getId(), priority);
+                    priorityComboBoxModel.updatePriority(priority);
                     priorityTableModel.updateRow(priority, selectedRow);
+                    todoTableModel.fireTableDataChanged();
                     clearTextFields();
                 } catch (InvalidEnteredDataException ex) {
                     JOptionPane.showMessageDialog(PriorityFrame.this, INVALID_PRIORITY_FIELDS_MESSAGE);

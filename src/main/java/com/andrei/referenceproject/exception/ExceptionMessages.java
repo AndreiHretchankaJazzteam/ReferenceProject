@@ -7,4 +7,5 @@ public final class ExceptionMessages {
     public static final String PRIORITY_NOT_FOUND_MESSAGE = "Priority with id=%d not found";
     public static final String TODO_EXISTED_NAME_VALUES_MESSAGE = "Todo name to save is not unique";
     public static final String PRIORITY_EXISTED_VALUES_MESSAGE = "Priority fields to save are not unique";
+    public static final String DELETE_BEING_USED_PRIORITY_MESSAGE = "There is at least one Todo that uses this priority";
 }
