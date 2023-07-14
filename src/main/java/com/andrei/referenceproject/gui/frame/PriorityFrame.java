@@ -1,7 +1,7 @@
 package com.andrei.referenceproject.gui.frame;
 
 import com.andrei.referenceproject.entity.Priority;
-import com.andrei.referenceproject.exception.ComponentDeleteException;
+import com.andrei.referenceproject.exception.ComponentDeletedException;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.InvalidEnteredDataException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
@@ -127,7 +127,7 @@ public class PriorityFrame extends JFrame {
                     priorityTableModel.deleteRow(selectedRow);
                     priorityComboBoxModel.deletePriority(priority);
                     clearTextFields();
-                } catch (ComponentDeleteException ex) {
+                } catch (ComponentDeletedException ex) {
                     JOptionPane.showMessageDialog(PriorityFrame.this, DELETE_BEING_USED_PRIORITY_MESSAGE);
                 }
             }

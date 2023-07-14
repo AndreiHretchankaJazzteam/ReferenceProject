@@ -2,7 +2,7 @@ package com.andrei.referenceproject.service.impl;
 
 import com.andrei.referenceproject.Application;
 import com.andrei.referenceproject.entity.Priority;
-import com.andrei.referenceproject.exception.ComponentDeleteException;
+import com.andrei.referenceproject.exception.ComponentDeletedException;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.service.PriorityService;
@@ -112,7 +112,7 @@ class PriorityServiceImplTest {
     void deleteUsedPriorityTest() {
         Long usedId = 1L;
 
-        assertThrows(ComponentDeleteException.class, () -> priorityService.deletePriority(usedId));
+        assertThrows(ComponentDeletedException.class, () -> priorityService.deletePriority(usedId));
     }
 
     @ParameterizedTest

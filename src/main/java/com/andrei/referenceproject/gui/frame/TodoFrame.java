@@ -37,10 +37,7 @@ public class TodoFrame extends JFrame {
     private Todo todoToUpdate;
 
     public TodoFrame(TodoService todoService, PriorityService priorityService, TodoTableModel tableModel) {
-        this.tableModel = tableModel;
-        this.todoService = todoService;
-        this.priorityService = priorityService;
-        initFrame();
+        this(todoService, priorityService, null, -1, tableModel);
     }
 
     public TodoFrame(TodoService todoService, PriorityService priorityService, Todo todo, int selectedRow, TodoTableModel tableModel) {

@@ -1,7 +1,7 @@
 package com.andrei.referenceproject.service.impl;
 
 import com.andrei.referenceproject.entity.Priority;
-import com.andrei.referenceproject.exception.ComponentDeleteException;
+import com.andrei.referenceproject.exception.ComponentDeletedException;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.repository.PriorityRepository;
@@ -54,7 +54,7 @@ public class PriorityServiceImpl implements PriorityService {
             findPriorityById(id);
             priorityRepository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new ComponentDeleteException(DELETE_BEING_USED_PRIORITY_MESSAGE);
+            throw new ComponentDeletedException(DELETE_BEING_USED_PRIORITY_MESSAGE);
         }
 
     }
