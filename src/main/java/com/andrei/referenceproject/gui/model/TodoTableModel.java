@@ -7,6 +7,7 @@ import javax.swing.table.AbstractTableModel;
 import java.time.LocalDate;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class TodoTableModel extends AbstractTableModel {
     private static final Map<Integer, String> COLUMNS = new HashMap<>();
@@ -19,6 +20,7 @@ public class TodoTableModel extends AbstractTableModel {
     public static final int COLUMN_INDEX_DATE = 2;
     public static final int COLUMN_INDEX_PRIORITY = 3;
     private final List<Todo> todos;
+    private Consumer<Todo> updateRowCallback;
 
     static {
         COLUMNS.put(COLUMN_INDEX_TITLE, COLUMN_NAME_TITLE);
@@ -87,6 +89,10 @@ public class TodoTableModel extends AbstractTableModel {
             case COLUMN_INDEX_DATE -> todo.setDate((LocalDate) aValue);
             case COLUMN_INDEX_PRIORITY -> todo.setPriority((Priority) aValue);
         }
+
+        if (updateRowCallback != null) {
+            updateRowCallback.accept(todo);
+        }
     }
 
     public void addRow(Todo todo) {
@@ -111,5 +117,9 @@ public class TodoTableModel extends AbstractTableModel {
     public void swapRow(int selectedRow, int rowTo) {
         Collections.swap(this.todos, selectedRow, rowTo);
         fireTableRowsUpdated(selectedRow, rowTo);
+    }
+
+    public void setUpdateValueCallback(Consumer<Todo> callback) {
+        this.updateRowCallback = callback;
     }
 }

@@ -1,42 +1,46 @@
 package com.andrei.referenceproject.service.impl;
 
+import com.andrei.referenceproject.Application;
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.service.TodoService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SpringBootTest(classes = Application.class)
+@ActiveProfiles("test")
+@Sql(scripts = {"/drop_schema.sql", "/create_schema.sql", "/insert_schema.sql"})
 class TodoServiceImplTest {
-    private static final Long FIRST_ID = -1L;
-    private static final Long SECOND_ID = -2L;
-    private TodoService todoService;
+    private static final Long FIRST_ID = 1L;
+    private static final Long SECOND_ID = 2L;
+    private static final Long THIRD_ID = 3L;
+    private static final Long FOURTH_ID = 4L;
 
-    @BeforeEach
-    void setUp() {
-        List<Todo> todos = new ArrayList<>();
-        todos.add(createFirstTodo());
-        todos.add(createSecondTodo());
-        todoService = new TodoServiceImpl(todos);
-    }
+    @Autowired
+    private TodoService todoService;
 
     @ParameterizedTest
     @MethodSource("prepareTodoToSave")
     void saveTodoTest(Todo todo) {
         Todo expectedTodo = new Todo();
-        expectedTodo.setId(1L);
-        expectedTodo.setName("Third");
+        expectedTodo.setId(4L);
+        expectedTodo.setName("New");
+        expectedTodo.setOrderNumber(4L);
 
         Todo actualTodo = todoService.saveTodo(todo);
 
@@ -84,7 +88,7 @@ class TodoServiceImplTest {
     @ParameterizedTest
     @MethodSource("prepareSwappedTodos")
     void swapTodoTest(List<Todo> expectedTodos) {
-        todoService.swapTodo(0, 1);
+        todoService.swapTodo(createFirstTodo(), createSecondTodo());
         List<Todo> actualTodos = todoService.findAllTodos();
 
         assertEquals(expectedTodos, actualTodos);
@@ -123,7 +127,8 @@ class TodoServiceImplTest {
 
     public static Stream<Arguments> prepareTodoToSave() {
         Todo todo = new Todo();
-        todo.setName("Third");
+        todo.setName("New");
+        todo.setOrderNumber(4L);
         return Stream.of(Arguments.of(todo));
     }
 
@@ -136,20 +141,25 @@ class TodoServiceImplTest {
     public static Stream<Arguments> prepareAllTodos() {
         return Stream.of(Arguments.of(List.of(
                 createFirstTodo(),
-                createSecondTodo()
+                createSecondTodo(),
+                createThirdTodo()
         )));
     }
 
     public static Stream<Arguments> prepareAllTodosWithNewTodo() {
         Todo todo = new Todo();
-        todo.setName("Third");
-        todo.setDescription("Third");
-        todo.setPriority(new Priority(-3L, "Third priority", 3));
-        todo.setDate(LocalDate.of(2023, 7, 12));
+        todo.setName("Fourth");
+        todo.setDescription("Fourth");
+        Priority priority = new Priority();
+        priority.setId(FIRST_ID);
+        priority.setWeight(1);
+        todo.setPriority(priority);
+        todo.setDate(LocalDate.of(2023, 7, 14));
         return Stream.of(Arguments.of(List.of(
                 createFirstTodo(),
                 createSecondTodo(),
-                createThirdTodo()
+                createThirdTodo(),
+                createFourthTodo()
         ), todo));
     }
 
@@ -166,9 +176,14 @@ class TodoServiceImplTest {
     }
 
     public static Stream<Arguments> prepareSwappedTodos() {
+        Todo todo1 = createFirstTodo();
+        todo1.setOrderNumber(2L);
+        Todo todo2 = createSecondTodo();
+        todo2.setOrderNumber(1L);
         return Stream.of(Arguments.of(List.of(
-                createSecondTodo(),
-                createFirstTodo()
+                todo2,
+                todo1,
+                createThirdTodo()
         )));
     }
 
@@ -177,33 +192,62 @@ class TodoServiceImplTest {
     }
 
     private static Todo createFirstTodo() {
-        return new Todo(
-                FIRST_ID,
-                "First",
-                "First",
-                new Priority(FIRST_ID, "First priority", 1),
-                LocalDate.of(2023, 7, 12)
-
-        );
+        Todo todo = new Todo();
+        todo.setId(FIRST_ID);
+        todo.setName("First");
+        todo.setDescription("First");
+        todo.setOrderNumber(1L);
+        todo.setDate(LocalDate.of(2023, 7, 14));
+        Priority priority = new Priority();
+        priority.setId(FIRST_ID);
+        priority.setWeight(1);
+        priority.setName("First");
+        todo.setPriority(priority);
+        return todo;
     }
 
     private static Todo createSecondTodo() {
-        return new Todo(
-                SECOND_ID,
-                "Second",
-                "Second",
-                new Priority(SECOND_ID, "Second priority", 2),
-                LocalDate.of(2023, 7, 12)
-        );
+        Todo todo = new Todo();
+        todo.setId(SECOND_ID);
+        todo.setName("Second");
+        todo.setDescription("Second");
+        todo.setOrderNumber(2L);
+        todo.setDate(LocalDate.of(2023, 7, 14));
+        Priority priority = new Priority();
+        priority.setId(SECOND_ID);
+        priority.setWeight(2);
+        priority.setName("Second");
+        todo.setPriority(priority);
+        return todo;
     }
 
     private static Todo createThirdTodo() {
-        return new Todo(
-                1L,
-                "Third",
-                "Third",
-                new Priority(-3L, "Third priority", 3),
-                LocalDate.of(2023, 7, 12)
-        );
+        Todo todo = new Todo();
+        todo.setId(THIRD_ID);
+        todo.setName("Third");
+        todo.setDescription("Third");
+        todo.setOrderNumber(3L);
+        todo.setDate(LocalDate.of(2023, 7, 14));
+        Priority priority = new Priority();
+        priority.setId(FIRST_ID);
+        priority.setWeight(1);
+        priority.setName("First");
+        todo.setPriority(priority);
+        return todo;
+    }
+
+    private static Todo createFourthTodo() {
+        Todo todo = new Todo();
+        todo.setId(FOURTH_ID);
+        todo.setName("Fourth");
+        todo.setDescription("Fourth");
+        todo.setOrderNumber(4L);
+        todo.setDate(LocalDate.of(2023, 7, 14));
+        Priority priority = new Priority();
+        priority.setId(FIRST_ID);
+        priority.setWeight(1);
+        priority.setName("First");
+        todo.setPriority(priority);
+        return todo;
     }
 }

@@ -1,38 +1,42 @@
 package com.andrei.referenceproject.service.impl;
 
+import com.andrei.referenceproject.Application;
 import com.andrei.referenceproject.entity.Priority;
+import com.andrei.referenceproject.exception.ComponentDeletedException;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.service.PriorityService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@SpringBootTest(classes = Application.class)
+@ActiveProfiles("test")
+@Sql(scripts = {"/drop_schema.sql", "/create_schema.sql", "/insert_schema.sql"})
 class PriorityServiceImplTest {
-    private static final Long FIRST_ID = -1L;
-    private static final Long SECOND_ID = -2L;
-    private PriorityService priorityService;
+    private static final Long FIRST_ID = 1L;
+    private static final Long SECOND_ID = 2L;
+    private static final Long THIRD_ID = 3L;
+    private static final Long FOURTH_ID = 4L;
 
-    @BeforeEach
-    void setUp() {
-        List<Priority> priorities = new ArrayList<>();
-        priorities.add(createFirstPriority());
-        priorities.add(createSecondPriority());
-        priorityService = new PriorityServiceImpl(priorities);
-    }
+    @Autowired
+    private PriorityService priorityService;
 
     @ParameterizedTest
     @MethodSource("preparePriorityToSave")
     void savePriorityTest(Priority priority) {
-        Priority expectedPriority = createThirdPriority();
+        Priority expectedPriority = createFourthPriority();
 
         Priority actualPriority = priorityService.savePriority(priority);
 
@@ -91,7 +95,7 @@ class PriorityServiceImplTest {
 
     @Test
     void deletePriorityTest() {
-        Long id = FIRST_ID;
+        Long id = THIRD_ID;
         priorityService.deletePriority(id);
 
         assertThrows(ComponentNotFoundException.class, () -> priorityService.findPriorityById(id));
@@ -102,6 +106,13 @@ class PriorityServiceImplTest {
         Long nonExistentId = 22L;
 
         assertThrows(ComponentNotFoundException.class, () -> priorityService.deletePriority(nonExistentId));
+    }
+
+    @Test
+    void deleteUsedPriorityTest() {
+        Long usedId = 1L;
+
+        assertThrows(ComponentDeletedException.class, () -> priorityService.deletePriority(usedId));
     }
 
     @ParameterizedTest
@@ -122,19 +133,20 @@ class PriorityServiceImplTest {
 
     public static Stream<Arguments> prepareAllPrioritiesWithNewPriority() {
         Priority priority = new Priority();
-        priority.setName("Third");
-        priority.setWeight(3);
+        priority.setName("Fourth");
+        priority.setWeight(4);
         return Stream.of(Arguments.of(List.of(
                 createFirstPriority(),
                 createSecondPriority(),
-                createThirdPriority()
+                createThirdPriority(),
+                createFourthPriority()
         ), priority));
     }
 
     public static Stream<Arguments> preparePriorityToSave() {
         Priority priority = new Priority();
-        priority.setName("Third");
-        priority.setWeight(3);
+        priority.setName("Fourth");
+        priority.setWeight(4);
         return Stream.of(Arguments.of(priority));
     }
 
@@ -153,7 +165,8 @@ class PriorityServiceImplTest {
     public static Stream<Arguments> prepareAllPriorities() {
         return Stream.of(Arguments.of(List.of(
                 createFirstPriority(),
-                createSecondPriority()
+                createSecondPriority(),
+                createThirdPriority()
         )));
     }
 
@@ -181,14 +194,34 @@ class PriorityServiceImplTest {
     }
 
     private static Priority createFirstPriority() {
-        return new Priority(FIRST_ID, "First", 1);
+        Priority priority = new Priority();
+        priority.setId(FIRST_ID);
+        priority.setName("First");
+        priority.setWeight(1);
+        return priority;
     }
 
     private static Priority createSecondPriority() {
-        return new Priority(SECOND_ID, "Second", 2);
+        Priority priority = new Priority();
+        priority.setId(SECOND_ID);
+        priority.setName("Second");
+        priority.setWeight(2);
+        return priority;
     }
 
     private static Priority createThirdPriority() {
-        return new Priority(1L, "Third", 3);
+        Priority priority = new Priority();
+        priority.setId(THIRD_ID);
+        priority.setName("Third");
+        priority.setWeight(3);
+        return priority;
+    }
+
+    private static Priority createFourthPriority() {
+        Priority priority = new Priority();
+        priority.setId(FOURTH_ID);
+        priority.setName("Fourth");
+        priority.setWeight(4);
+        return priority;
     }
 }

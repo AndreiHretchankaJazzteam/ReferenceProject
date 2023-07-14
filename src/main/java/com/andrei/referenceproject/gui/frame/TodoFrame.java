@@ -8,16 +8,14 @@ import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.gui.model.TodoTableModel;
 import com.andrei.referenceproject.service.PriorityService;
 import com.andrei.referenceproject.service.TodoService;
-import com.andrei.referenceproject.service.impl.PriorityServiceImpl;
-import com.andrei.referenceproject.service.impl.TodoServiceImpl;
 import com.github.lgooddatepicker.components.DatePicker;
 
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
-import java.util.List;
 
-import static com.andrei.referenceproject.exception.ExceptionMessages.*;
+import static com.andrei.referenceproject.exception.ExceptionMessages.INVALID_TODO_FIELDS_MESSAGE;
+import static com.andrei.referenceproject.exception.ExceptionMessages.TODO_EXISTED_NAME_VALUES_MESSAGE;
 
 public class TodoFrame extends JFrame {
     private static final String FRAME_TITLE_CREATE = "Create Todo";
@@ -38,16 +36,13 @@ public class TodoFrame extends JFrame {
     private JButton dateButton;
     private Todo todoToUpdate;
 
-    public TodoFrame(List<Priority> priorities, List<Todo> todos, TodoTableModel tableModel) {
-        this.tableModel = tableModel;
-        todoService = new TodoServiceImpl(todos);
-        priorityService = new PriorityServiceImpl(priorities);
-        initFrame();
+    public TodoFrame(TodoService todoService, PriorityService priorityService, TodoTableModel tableModel) {
+        this(todoService, priorityService, null, -1, tableModel);
     }
 
-    public TodoFrame(Todo todo, int selectedRow, List<Priority> priorities, List<Todo> todos, TodoTableModel tableModel) {
-        todoService = new TodoServiceImpl(todos);
-        priorityService = new PriorityServiceImpl(priorities);
+    public TodoFrame(TodoService todoService, PriorityService priorityService, Todo todo, int selectedRow, TodoTableModel tableModel) {
+        this.todoService = todoService;
+        this.priorityService = priorityService;
         this.todoToUpdate = todo;
         this.selectedRow = selectedRow;
         this.tableModel = tableModel;
