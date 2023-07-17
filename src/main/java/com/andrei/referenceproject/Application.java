@@ -1,6 +1,7 @@
 package com.andrei.referenceproject;
 
 
+import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.gui.frame.MainFrame;
 import com.andrei.referenceproject.service.PriorityService;
 import com.andrei.referenceproject.service.TodoService;
@@ -14,6 +15,6 @@ public class Application {
         ApplicationContext context = new SpringApplicationBuilder(Application.class)
                 .headless(false)
                 .run(args);
-        new MainFrame(context.getBean(TodoService.class), context.getBean(PriorityService.class));
+        new MainFrame(context.getBean(TodoService.class), context.getBean(PriorityService.class), context.getBean(EventPublisher.class));
     }
 }

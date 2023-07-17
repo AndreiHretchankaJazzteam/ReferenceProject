@@ -1,18 +1,23 @@
 package com.andrei.referenceproject.gui.frame;
 
 import com.andrei.referenceproject.entity.Priority;
+import com.andrei.referenceproject.event.EventPublisher;
+import com.andrei.referenceproject.event.EventSubscriber;
+import com.andrei.referenceproject.event.EventType;
 import com.andrei.referenceproject.exception.ComponentDeletedException;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.InvalidEnteredDataException;
-import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.gui.model.PriorityTableModel;
-import com.andrei.referenceproject.gui.model.TodoTableModel;
 import com.andrei.referenceproject.service.PriorityService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.andrei.referenceproject.exception.ExceptionMessages.*;
 
@@ -21,8 +26,8 @@ public class PriorityFrame extends JFrame {
     private static final int FRAME_WIDTH = 400;
     private static final int FRAME_HEIGHT = 300;
     private final PriorityService priorityService;
-    private final PriorityComboBoxModel priorityComboBoxModel;
-    private final TodoTableModel todoTableModel;
+    private final EventPublisher eventPublisher;
+    private final Map<EventType, EventSubscriber> eventSubscribers = new HashMap<>();
     private PriorityTableModel priorityTableModel;
     private JPanel rootPanel;
     private JButton addButton;
@@ -32,13 +37,13 @@ public class PriorityFrame extends JFrame {
     private JTextField priorityWeightTextField;
     private JTable priorityTable;
 
-    public PriorityFrame(PriorityService priorityService, PriorityComboBoxModel priorityComboBoxModel, TodoTableModel todoTableModel) {
-        this.todoTableModel = todoTableModel;
+    public PriorityFrame(PriorityService priorityService, EventPublisher eventPublisher) {
         this.priorityService = priorityService;
-        this.priorityComboBoxModel = priorityComboBoxModel;
+        this.eventPublisher = eventPublisher;
         initPanel();
         initTable();
         addListeners();
+        addSubscribers();
     }
 
     private void initPanel() {
@@ -54,6 +59,7 @@ public class PriorityFrame extends JFrame {
     private void initTable() {
         priorityTableModel = new PriorityTableModel(priorityService.findAllPriorities());
         priorityTable.setModel(priorityTableModel);
+        priorityTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     private void addListeners() {
@@ -61,6 +67,7 @@ public class PriorityFrame extends JFrame {
         addDeleteButtonListener();
         addEditButtonListener();
         addTableListener();
+        addWindowListener();
     }
 
     private void addTableListener() {
@@ -106,8 +113,7 @@ public class PriorityFrame extends JFrame {
             try {
                 Priority priority = createPriorityFromFields();
                 priority = priorityService.savePriority(priority);
-                priorityTableModel.addRow(priority);
-                priorityComboBoxModel.addPriority(priority);
+                eventPublisher.notifySubscribers(EventType.CREATE_PRIORITY, priority);
                 clearTextFields();
             } catch (InvalidEnteredDataException ex) {
                 JOptionPane.showMessageDialog(PriorityFrame.this, INVALID_PRIORITY_FIELDS_MESSAGE);
@@ -124,8 +130,7 @@ public class PriorityFrame extends JFrame {
                 try {
                     Priority priority = priorityTableModel.getSelectedPriority(selectedRow);
                     priorityService.deletePriority(priority.getId());
-                    priorityTableModel.deleteRow(selectedRow);
-                    priorityComboBoxModel.deletePriority(priority);
+                    eventPublisher.notifySubscribers(EventType.DELETE_PRIORITY, priority.getId());
                     clearTextFields();
                 } catch (ComponentDeletedException ex) {
                     JOptionPane.showMessageDialog(PriorityFrame.this, DELETE_BEING_USED_PRIORITY_MESSAGE);
@@ -141,16 +146,23 @@ public class PriorityFrame extends JFrame {
                 try {
                     Priority priority = createPriorityFromFields();
                     Priority priorityToUpdate = priorityTableModel.getSelectedPriority(selectedRow);
-                    priorityService.updatePriority(priorityToUpdate.getId(), priority);
-                    priorityComboBoxModel.updatePriority(priority);
-                    priorityTableModel.updateRow(priority, selectedRow);
-                    todoTableModel.fireTableDataChanged();
+                    priority = priorityService.updatePriority(priorityToUpdate.getId(), priority);
+                    eventPublisher.notifySubscribers(EventType.UPDATE_PRIORITY, priority);
                     clearTextFields();
                 } catch (InvalidEnteredDataException ex) {
                     JOptionPane.showMessageDialog(PriorityFrame.this, INVALID_PRIORITY_FIELDS_MESSAGE);
                 } catch (ComponentExistedValuesException ex) {
                     JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
                 }
+            }
+        });
+    }
+
+    private void addWindowListener() {
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                eventPublisher.unsubscribe(eventSubscribers);
             }
         });
     }
@@ -192,5 +204,12 @@ public class PriorityFrame extends JFrame {
     private void clearTextFields() {
         priorityNameTextField.setText("");
         priorityWeightTextField.setText("");
+    }
+
+    private void addSubscribers() {
+        eventSubscribers.put(EventType.CREATE_PRIORITY, data -> priorityTableModel.addRow((Priority) data));
+        eventSubscribers.put(EventType.UPDATE_PRIORITY, data -> priorityTableModel.updateRow((Priority) data));
+        eventSubscribers.put(EventType.DELETE_PRIORITY, data -> priorityTableModel.deleteRow((Long) data));
+        eventPublisher.subscribe(eventSubscribers);
     }
 }
