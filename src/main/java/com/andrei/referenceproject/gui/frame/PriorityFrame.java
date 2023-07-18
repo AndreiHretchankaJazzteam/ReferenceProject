@@ -4,11 +4,9 @@ import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.event.EventSubscriber;
 import com.andrei.referenceproject.event.EventType;
-import com.andrei.referenceproject.exception.ComponentDeletedException;
-import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.InvalidEnteredDataException;
 import com.andrei.referenceproject.gui.model.PriorityTableModel;
-import com.andrei.referenceproject.service.PriorityService;
+import com.andrei.referenceproject.task.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +14,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.andrei.referenceproject.exception.ExceptionMessages.*;
@@ -25,8 +25,8 @@ public class PriorityFrame extends JFrame {
     private static final String FRAME_TITLE = "Priority";
     private static final int FRAME_WIDTH = 400;
     private static final int FRAME_HEIGHT = 300;
-    private final PriorityService priorityService;
     private final EventPublisher eventPublisher;
+    private final TaskFactory taskFactory;
     private final Map<EventType, EventSubscriber> eventSubscribers = new HashMap<>();
     private PriorityTableModel priorityTableModel;
     private JPanel rootPanel;
@@ -37,11 +37,11 @@ public class PriorityFrame extends JFrame {
     private JTextField priorityWeightTextField;
     private JTable priorityTable;
 
-    public PriorityFrame(PriorityService priorityService, EventPublisher eventPublisher) {
-        this.priorityService = priorityService;
+    public PriorityFrame(EventPublisher eventPublisher, TaskFactory taskFactory) {
         this.eventPublisher = eventPublisher;
+        this.taskFactory = taskFactory;
         initPanel();
-        initTable();
+        loadPriorityTableData();
         addListeners();
         addSubscribers();
     }
@@ -56,8 +56,23 @@ public class PriorityFrame extends JFrame {
         setVisible(true);
     }
 
-    private void initTable() {
-        priorityTableModel = new PriorityTableModel(priorityService.findAllPriorities());
+    private void loadPriorityTableData() {
+        GetAllPriorityTask getAllPriorityTask = taskFactory.getGetAllPriorityTask();
+        getAllPriorityTask.execute(new ArrayList<>(), new TaskListener<>() {
+            @Override
+            public void onSuccess(List<Priority> priorities) {
+                initTable(priorities);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+
+            }
+        });
+    }
+
+    private void initTable(List<Priority> priorities) {
+        priorityTableModel = new PriorityTableModel(priorities);
         priorityTable.setModel(priorityTableModel);
         priorityTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
@@ -112,13 +127,21 @@ public class PriorityFrame extends JFrame {
         addButton.addActionListener(e -> {
             try {
                 Priority priority = createPriorityFromFields();
-                priority = priorityService.savePriority(priority);
-                eventPublisher.notifySubscribers(EventType.CREATE_PRIORITY, priority);
+                CreatePriorityTask createPriorityTask = taskFactory.getCreatePriorityTask();
+                createPriorityTask.execute(priority, new TaskListener<>() {
+                    @Override
+                    public void onSuccess(Priority priority) {
+
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
+                    }
+                });
                 clearTextFields();
             } catch (InvalidEnteredDataException ex) {
                 JOptionPane.showMessageDialog(PriorityFrame.this, INVALID_PRIORITY_FIELDS_MESSAGE);
-            } catch (ComponentExistedValuesException ex) {
-                JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
             }
         });
     }
@@ -127,14 +150,20 @@ public class PriorityFrame extends JFrame {
         deleteButton.addActionListener(e -> {
             int selectedRow = priorityTable.getSelectedRow();
             if (selectedRow != -1) {
-                try {
-                    Priority priority = priorityTableModel.getSelectedPriority(selectedRow);
-                    priorityService.deletePriority(priority.getId());
-                    eventPublisher.notifySubscribers(EventType.DELETE_PRIORITY, priority.getId());
-                    clearTextFields();
-                } catch (ComponentDeletedException ex) {
-                    JOptionPane.showMessageDialog(PriorityFrame.this, DELETE_BEING_USED_PRIORITY_MESSAGE);
-                }
+                Priority priority = priorityTableModel.getSelectedPriority(selectedRow);
+                DeletePriorityTask deletePriorityTask = taskFactory.getDeletePriorityTask();
+                deletePriorityTask.execute(priority.getId(), new TaskListener<>() {
+                    @Override
+                    public void onSuccess(Long id) {
+
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        JOptionPane.showMessageDialog(PriorityFrame.this, DELETE_BEING_USED_PRIORITY_MESSAGE);
+                    }
+                });
+                clearTextFields();
             }
         });
     }
@@ -146,13 +175,22 @@ public class PriorityFrame extends JFrame {
                 try {
                     Priority priority = createPriorityFromFields();
                     Priority priorityToUpdate = priorityTableModel.getSelectedPriority(selectedRow);
-                    priority = priorityService.updatePriority(priorityToUpdate.getId(), priority);
-                    eventPublisher.notifySubscribers(EventType.UPDATE_PRIORITY, priority);
+                    priority.setId(priorityToUpdate.getId());
+                    UpdatePriorityTask updatePriorityTask = taskFactory.getUpdatePriorityTask();
+                    updatePriorityTask.execute(priority, new TaskListener<>() {
+                        @Override
+                        public void onSuccess(Priority priority) {
+
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
+                        }
+                    });
                     clearTextFields();
                 } catch (InvalidEnteredDataException ex) {
                     JOptionPane.showMessageDialog(PriorityFrame.this, INVALID_PRIORITY_FIELDS_MESSAGE);
-                } catch (ComponentExistedValuesException ex) {
-                    JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
                 }
             }
         });
