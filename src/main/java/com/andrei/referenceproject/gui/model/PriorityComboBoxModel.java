@@ -54,8 +54,11 @@ public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
         priorities.add(priority);
     }
 
-    public void deletePriority(Priority priority) {
-        priorities.remove(priority);
+    public void deletePriority(Long id) {
+        priorities.stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst()
+                .ifPresent(priorities::remove);
     }
 
     public void updatePriority(Priority priority) {
@@ -66,5 +69,12 @@ public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
                     p.setName(priority.getName());
                     p.setWeight(priority.getWeight());
                 });
+    }
+
+    public Priority getPriority(Priority priority) {
+        return priorities.stream()
+                .filter(p -> p.getId().equals(priority.getId()))
+                .findFirst()
+                .orElse(priorities.get(0));
     }
 }

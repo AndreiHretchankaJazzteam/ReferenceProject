@@ -2,17 +2,23 @@ package com.andrei.referenceproject.gui.frame;
 
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
-import com.andrei.referenceproject.exception.ComponentExistedValuesException;
+import com.andrei.referenceproject.event.EventPublisher;
+import com.andrei.referenceproject.event.EventSubscriber;
+import com.andrei.referenceproject.event.EventType;
 import com.andrei.referenceproject.exception.InvalidEnteredDataException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
-import com.andrei.referenceproject.gui.model.TodoTableModel;
-import com.andrei.referenceproject.service.PriorityService;
-import com.andrei.referenceproject.service.TodoService;
+import com.andrei.referenceproject.task.*;
 import com.github.lgooddatepicker.components.DatePicker;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.andrei.referenceproject.exception.ExceptionMessages.INVALID_TODO_FIELDS_MESSAGE;
 import static com.andrei.referenceproject.exception.ExceptionMessages.TODO_EXISTED_NAME_VALUES_MESSAGE;
@@ -22,11 +28,8 @@ public class TodoFrame extends JFrame {
     private static final String FRAME_TITLE_EDIT = "Edit Todo";
     private static final int FRAME_WIDTH = 600;
     private static final int FRAME_HEIGHT = 500;
-    private final PriorityService priorityService;
-    private final TodoService todoService;
-    private final TodoTableModel tableModel;
+    private final Map<EventType, EventSubscriber> eventSubscribers = new HashMap<>();
     private DatePicker datePicker;
-    private int selectedRow;
     private JPanel rootPanel;
     private JButton acceptButton;
     private JTextArea descriptionTextArea;
@@ -36,24 +39,20 @@ public class TodoFrame extends JFrame {
     private JButton dateButton;
     private Todo todoToUpdate;
 
-    public TodoFrame(TodoService todoService, PriorityService priorityService, TodoTableModel tableModel) {
-        this(todoService, priorityService, null, -1, tableModel);
+    public TodoFrame() {
+        this(null);
     }
 
-    public TodoFrame(TodoService todoService, PriorityService priorityService, Todo todo, int selectedRow, TodoTableModel tableModel) {
-        this.todoService = todoService;
-        this.priorityService = priorityService;
+    public TodoFrame(Todo todo) {
         this.todoToUpdate = todo;
-        this.selectedRow = selectedRow;
-        this.tableModel = tableModel;
         initFrame();
     }
 
     private void initFrame() {
         initPanel();
         initPriorities();
-        initFields();
         addListeners();
+        addSubscribers();
     }
 
     private void initPanel() {
@@ -67,12 +66,20 @@ public class TodoFrame extends JFrame {
     }
 
     private void initPriorities() {
-        prioritiesModel = new PriorityComboBoxModel(priorityService.findAllPriorities());
-        priorityComboBox.setModel(prioritiesModel);
+        GetAllPriorityTask getAllPriorityTask = TaskFactory.getGetAllPriorityTask();
+        getAllPriorityTask.execute(new ArrayList<>(), new TaskListener<>() {
+            @Override
+            public void onSuccess(List<Priority> priorities) {
+                prioritiesModel = new PriorityComboBoxModel(priorities);
+                priorityComboBox.setModel(prioritiesModel);
+                initFields();
+            }
+        });
     }
 
     private void addListeners() {
         addAcceptButtonListener();
+        addWindowListener();
     }
 
     private void addAcceptButtonListener() {
@@ -80,16 +87,35 @@ public class TodoFrame extends JFrame {
             try {
                 Todo todo = createTodoFromFields();
                 if (todoToUpdate == null) {
-                    tableModel.addRow(todoService.saveTodo(todo));
+                    CreateTodoTask createTodoTask = TaskFactory.getCreateTodoTask();
+                    createTodoTask.execute(todo, new TaskListener<>() {
+                        @Override
+                        public void onFailure(Exception e) {
+                            JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+                        }
+                    });
                 } else {
-                    todoService.updateTodo(todoToUpdate.getId(), todo);
-                    tableModel.updateRow(todo, selectedRow);
+                    todo.setId(todoToUpdate.getId());
+                    UpdateTodoTask updateTodoTask = TaskFactory.getUpdateTodoTask();
+                    updateTodoTask.execute(todo, new TaskListener<>() {
+                        @Override
+                        public void onFailure(Exception e) {
+                            JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+                        }
+                    });
                 }
                 dispose();
             } catch (InvalidEnteredDataException ex) {
                 JOptionPane.showMessageDialog(TodoFrame.this, INVALID_TODO_FIELDS_MESSAGE);
-            } catch (ComponentExistedValuesException ex) {
-                JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+            }
+        });
+    }
+
+    private void addWindowListener() {
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                EventPublisher.unsubscribe(eventSubscribers);
             }
         });
     }
@@ -125,11 +151,24 @@ public class TodoFrame extends JFrame {
             nameTextField.setText(todoToUpdate.getName());
             descriptionTextArea.setText(todoToUpdate.getDescription());
             datePicker.setDate(todoToUpdate.getDate());
-            priorityComboBox.setSelectedItem(todoToUpdate.getPriority());
+            prioritiesModel.setSelectedItem(todoToUpdate.getPriority());
         }
     }
 
     private boolean isForEdit() {
         return todoToUpdate != null;
+    }
+
+    private void addSubscribers() {
+        eventSubscribers.put(EventType.CREATE_PRIORITY, data -> prioritiesModel.addPriority((Priority) data));
+        eventSubscribers.put(EventType.UPDATE_PRIORITY, data -> prioritiesModel.updatePriority((Priority) data));
+        eventSubscribers.put(EventType.DELETE_PRIORITY, data -> prioritiesModel.deletePriority((Long) data));
+        EventPublisher.subscribe(eventSubscribers);
+    }
+
+    @Override
+    public void dispose() {
+        EventPublisher.unsubscribe(eventSubscribers);
+        super.dispose();
     }
 }

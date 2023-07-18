@@ -66,14 +66,26 @@ public class PriorityTableModel extends AbstractTableModel {
         fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
     }
 
-    public void deleteRow(int selectedRow) {
-        priorities.remove(selectedRow);
-        fireTableRowsDeleted(selectedRow, selectedRow);
+    public void deleteRow(Long id) {
+        priorities.stream()
+                .filter(priority -> priority.getId().equals(id))
+                .findFirst()
+                .ifPresent(priority -> {
+                    int index = priorities.indexOf(priority);
+                    priorities.remove(index);
+                    fireTableRowsDeleted(index, index);
+                });
     }
 
-    public void updateRow(Priority priority, int index) {
-        priorities.set(index, priority);
-        fireTableRowsUpdated(index, index);
+    public void updateRow(Priority updatedPriority) {
+        priorities.stream()
+                .filter(priority -> priority.getId().equals(updatedPriority.getId()))
+                .findFirst()
+                .ifPresent(priority -> {
+                    int index = priorities.indexOf(priority);
+                    priorities.set(index, updatedPriority);
+                    fireTableRowsUpdated(index, index);
+                });
     }
 
     public Priority getSelectedPriority(int index) {

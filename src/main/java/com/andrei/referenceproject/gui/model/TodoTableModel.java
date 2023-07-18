@@ -20,6 +20,7 @@ public class TodoTableModel extends AbstractTableModel {
     public static final int COLUMN_INDEX_DATE = 2;
     public static final int COLUMN_INDEX_PRIORITY = 3;
     private final List<Todo> todos;
+    private final PriorityComboBoxModel prioritiesModel;
     private Consumer<Todo> updateRowCallback;
 
     static {
@@ -29,8 +30,9 @@ public class TodoTableModel extends AbstractTableModel {
         COLUMNS.put(COLUMN_INDEX_PRIORITY, COLUMN_NAME_PRIORITY);
     }
 
-    public TodoTableModel(List<Todo> todos) {
+    public TodoTableModel(List<Todo> todos, PriorityComboBoxModel prioritiesModel) {
         this.todos = new ArrayList<>(todos);
+        this.prioritiesModel = prioritiesModel;
     }
 
     @Override
@@ -73,7 +75,7 @@ public class TodoTableModel extends AbstractTableModel {
             case COLUMN_INDEX_DATE -> valueAt = todo.getDate();
             case COLUMN_INDEX_PRIORITY -> {
                 if (todo.getPriority() != null) {
-                    valueAt = todo.getPriority().getName();
+                    valueAt = prioritiesModel.getPriority(todo.getPriority());
                 }
             }
         }
@@ -100,23 +102,37 @@ public class TodoTableModel extends AbstractTableModel {
         fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
     }
 
-    public void updateRow(Todo todo, int index) {
-        todos.set(index, todo);
-        fireTableRowsUpdated(index, index);
+    public void updateRow(Todo updatedTodo) {
+        todos.stream()
+                .filter(todo -> todo.getId().equals(updatedTodo.getId()))
+                .findFirst()
+                .ifPresent(todo -> {
+                    int index = todos.indexOf(todo);
+                    todos.set(index, updatedTodo);
+                    fireTableRowsUpdated(index, index);
+                });
     }
 
     public Todo getSelectedTodo(int index) {
         return todos.get(index);
     }
 
-    public void deleteRow(int selectedRow) {
-        todos.remove(selectedRow);
-        fireTableRowsDeleted(selectedRow, selectedRow);
+    public void deleteRow(Long id) {
+        todos.stream()
+                .filter(todo -> todo.getId().equals(id))
+                .findFirst()
+                .ifPresent(todo -> {
+                    int index = todos.indexOf(todo);
+                    todos.remove(index);
+                    fireTableRowsDeleted(index, index);
+                });
     }
 
-    public void swapRow(int selectedRow, int rowTo) {
-        Collections.swap(this.todos, selectedRow, rowTo);
-        fireTableRowsUpdated(selectedRow, rowTo);
+    public void swapRow(List<Todo> todoList) {
+        int firstIndex = todoList.get(0).getOrderNumber().intValue() - 1;
+        int secondIndex = todoList.get(1).getOrderNumber().intValue() - 1;
+        Collections.swap(this.todos, firstIndex, secondIndex);
+        fireTableRowsUpdated(firstIndex, secondIndex);
     }
 
     public void setUpdateValueCallback(Consumer<Todo> callback) {
