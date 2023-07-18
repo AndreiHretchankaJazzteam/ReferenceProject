@@ -25,8 +25,6 @@ public class PriorityFrame extends JFrame {
     private static final String FRAME_TITLE = "Priority";
     private static final int FRAME_WIDTH = 400;
     private static final int FRAME_HEIGHT = 300;
-    private final EventPublisher eventPublisher;
-    private final TaskFactory taskFactory;
     private final Map<EventType, EventSubscriber> eventSubscribers = new HashMap<>();
     private PriorityTableModel priorityTableModel;
     private JPanel rootPanel;
@@ -37,9 +35,7 @@ public class PriorityFrame extends JFrame {
     private JTextField priorityWeightTextField;
     private JTable priorityTable;
 
-    public PriorityFrame(EventPublisher eventPublisher, TaskFactory taskFactory) {
-        this.eventPublisher = eventPublisher;
-        this.taskFactory = taskFactory;
+    public PriorityFrame() {
         initPanel();
         loadPriorityTableData();
         addListeners();
@@ -57,16 +53,11 @@ public class PriorityFrame extends JFrame {
     }
 
     private void loadPriorityTableData() {
-        GetAllPriorityTask getAllPriorityTask = taskFactory.getGetAllPriorityTask();
+        GetAllPriorityTask getAllPriorityTask = TaskFactory.getGetAllPriorityTask();
         getAllPriorityTask.execute(new ArrayList<>(), new TaskListener<>() {
             @Override
             public void onSuccess(List<Priority> priorities) {
                 initTable(priorities);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-
             }
         });
     }
@@ -127,13 +118,8 @@ public class PriorityFrame extends JFrame {
         addButton.addActionListener(e -> {
             try {
                 Priority priority = createPriorityFromFields();
-                CreatePriorityTask createPriorityTask = taskFactory.getCreatePriorityTask();
+                CreatePriorityTask createPriorityTask = TaskFactory.getCreatePriorityTask();
                 createPriorityTask.execute(priority, new TaskListener<>() {
-                    @Override
-                    public void onSuccess(Priority priority) {
-
-                    }
-
                     @Override
                     public void onFailure(Exception e) {
                         JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
@@ -151,13 +137,8 @@ public class PriorityFrame extends JFrame {
             int selectedRow = priorityTable.getSelectedRow();
             if (selectedRow != -1) {
                 Priority priority = priorityTableModel.getSelectedPriority(selectedRow);
-                DeletePriorityTask deletePriorityTask = taskFactory.getDeletePriorityTask();
+                DeletePriorityTask deletePriorityTask = TaskFactory.getDeletePriorityTask();
                 deletePriorityTask.execute(priority.getId(), new TaskListener<>() {
-                    @Override
-                    public void onSuccess(Long id) {
-
-                    }
-
                     @Override
                     public void onFailure(Exception e) {
                         JOptionPane.showMessageDialog(PriorityFrame.this, DELETE_BEING_USED_PRIORITY_MESSAGE);
@@ -176,13 +157,8 @@ public class PriorityFrame extends JFrame {
                     Priority priority = createPriorityFromFields();
                     Priority priorityToUpdate = priorityTableModel.getSelectedPriority(selectedRow);
                     priority.setId(priorityToUpdate.getId());
-                    UpdatePriorityTask updatePriorityTask = taskFactory.getUpdatePriorityTask();
+                    UpdatePriorityTask updatePriorityTask = TaskFactory.getUpdatePriorityTask();
                     updatePriorityTask.execute(priority, new TaskListener<>() {
-                        @Override
-                        public void onSuccess(Priority priority) {
-
-                        }
-
                         @Override
                         public void onFailure(Exception e) {
                             JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
@@ -200,7 +176,7 @@ public class PriorityFrame extends JFrame {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                eventPublisher.unsubscribe(eventSubscribers);
+                EventPublisher.unsubscribe(eventSubscribers);
             }
         });
     }
@@ -248,6 +224,6 @@ public class PriorityFrame extends JFrame {
         eventSubscribers.put(EventType.CREATE_PRIORITY, data -> priorityTableModel.addRow((Priority) data));
         eventSubscribers.put(EventType.UPDATE_PRIORITY, data -> priorityTableModel.updateRow((Priority) data));
         eventSubscribers.put(EventType.DELETE_PRIORITY, data -> priorityTableModel.deleteRow((Long) data));
-        eventPublisher.subscribe(eventSubscribers);
+        EventPublisher.subscribe(eventSubscribers);
     }
 }

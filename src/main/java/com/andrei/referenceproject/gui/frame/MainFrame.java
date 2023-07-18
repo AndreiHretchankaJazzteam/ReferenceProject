@@ -25,9 +25,7 @@ public class MainFrame extends JFrame {
     private static final String FRAME_TITLE = "Reference project";
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
-    private final EventPublisher eventPublisher;
     private final Map<EventType, EventSubscriber> eventSubscribers = new HashMap<>();
-    private final TaskFactory taskFactory;
     private final JComboBox<Priority> priorityComboBox = new JComboBox<>();
     private JPanel rootPanel;
     private JTable todoTable;
@@ -40,9 +38,7 @@ public class MainFrame extends JFrame {
     private TodoTableModel tableModel;
     private PriorityComboBoxModel prioritiesModel;
 
-    public MainFrame(EventPublisher eventPublisher, TaskFactory taskFactory) {
-        this.eventPublisher = eventPublisher;
-        this.taskFactory = taskFactory;
+    public MainFrame() {
         initPanel();
         loadPriorities();
         loadTodoTableData();
@@ -61,32 +57,22 @@ public class MainFrame extends JFrame {
     }
 
     private void loadPriorities() {
-        GetAllPriorityTask getAllPriorityTask = taskFactory.getGetAllPriorityTask();
+        GetAllPriorityTask getAllPriorityTask = TaskFactory.getGetAllPriorityTask();
         getAllPriorityTask.execute(new ArrayList<>(), new TaskListener<>() {
             @Override
             public void onSuccess(List<Priority> priorities) {
                 prioritiesModel = new PriorityComboBoxModel(priorities);
                 priorityComboBox.setModel(prioritiesModel);
             }
-
-            @Override
-            public void onFailure(Exception e) {
-
-            }
         });
     }
 
     private void loadTodoTableData() {
-        GetAllTodoTask getAllTodoTask = taskFactory.getGetAllTodoTask();
+        GetAllTodoTask getAllTodoTask = TaskFactory.getGetAllTodoTask();
         getAllTodoTask.execute(new ArrayList<>(), new TaskListener<>() {
             @Override
             public void onSuccess(List<Todo> todos) {
                 initTable(todos);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-
             }
         });
     }
@@ -96,16 +82,11 @@ public class MainFrame extends JFrame {
         todoTable.setModel(tableModel);
         decorateTable();
         tableModel.setUpdateValueCallback(todo -> {
-            UpdateTodoTask updateTodoTask = taskFactory.getUpdateTodoTask();
+            UpdateTodoTask updateTodoTask = TaskFactory.getUpdateTodoTask();
             updateTodoTask.execute(todo, new TaskListener<>() {
                 @Override
-                public void onSuccess(Todo todo) {
-
-                }
-
-                @Override
                 public void onFailure(Exception e) {
-                    FindTodoTask findTodoTask = taskFactory.getFindTodoTask();
+                    FindTodoTask findTodoTask = TaskFactory.getFindTodoTask();
                     findTodoTask.execute(todo, createFindTodoTaskListener());
                     JOptionPane.showMessageDialog(MainFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
                 }
@@ -118,11 +99,6 @@ public class MainFrame extends JFrame {
             @Override
             public void onSuccess(Todo todo) {
                 tableModel.updateRow(todo);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-
             }
         };
     }
@@ -145,7 +121,7 @@ public class MainFrame extends JFrame {
     }
 
     private void addAddButtonListener() {
-        addButton.addActionListener(e -> new TodoFrame(eventPublisher, taskFactory));
+        addButton.addActionListener(e -> new TodoFrame());
     }
 
     private void addEditButtonListener() {
@@ -153,7 +129,7 @@ public class MainFrame extends JFrame {
             int selectedRow = todoTable.getSelectedRow();
             if (selectedRow != -1) {
                 Todo todo = tableModel.getSelectedTodo(selectedRow);
-                new TodoFrame(todo, eventPublisher, taskFactory);
+                new TodoFrame(todo);
             }
         });
     }
@@ -163,18 +139,8 @@ public class MainFrame extends JFrame {
             int selectedRow = todoTable.getSelectedRow();
             if (selectedRow != -1) {
                 Todo todoToDelete = tableModel.getSelectedTodo(selectedRow);
-                DeleteTodoTask deleteTodoTask = taskFactory.getDeleteTodoTask();
-                deleteTodoTask.execute(todoToDelete.getId(), new TaskListener<>() {
-                    @Override
-                    public void onSuccess(Long id) {
-
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-
-                    }
-                });
+                DeleteTodoTask deleteTodoTask = TaskFactory.getDeleteTodoTask();
+                deleteTodoTask.execute(todoToDelete.getId());
             }
         });
     }
@@ -187,18 +153,8 @@ public class MainFrame extends JFrame {
                 List<Todo> todoList = new ArrayList<>();
                 todoList.add(tableModel.getSelectedTodo(selectedRow));
                 todoList.add(tableModel.getSelectedTodo(rowTo));
-                SwapTodoTask swapTodoTask = taskFactory.getSwapTodoTask();
-                swapTodoTask.execute(todoList, new TaskListener<>() {
-                    @Override
-                    public void onSuccess(List<Todo> todos) {
-
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-
-                    }
-                });
+                SwapTodoTask swapTodoTask = TaskFactory.getSwapTodoTask();
+                swapTodoTask.execute(todoList);
                 todoTable.changeSelection(rowTo, 0, false, false);
             }
         });
@@ -212,38 +168,28 @@ public class MainFrame extends JFrame {
                 List<Todo> todoList = new ArrayList<>();
                 todoList.add(tableModel.getSelectedTodo(selectedRow));
                 todoList.add(tableModel.getSelectedTodo(rowTo));
-                SwapTodoTask swapTodoTask = taskFactory.getSwapTodoTask();
-                swapTodoTask.execute(todoList, new TaskListener<>() {
-                    @Override
-                    public void onSuccess(List<Todo> todos) {
-
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-
-                    }
-                });
+                SwapTodoTask swapTodoTask = TaskFactory.getSwapTodoTask();
+                swapTodoTask.execute(todoList);
                 todoTable.changeSelection(rowTo, 0, false, false);
             }
         });
     }
 
     private void addPriorityButtonListener() {
-        priorityButton.addActionListener(e -> new PriorityFrame(eventPublisher, taskFactory));
+        priorityButton.addActionListener(e -> new PriorityFrame());
     }
 
     private void addSubscribers() {
         eventSubscribers.put(EventType.CREATE_TODO, data -> tableModel.addRow((Todo) data));
         eventSubscribers.put(EventType.UPDATE_TODO, data -> tableModel.updateRow((Todo) data));
         eventSubscribers.put(EventType.DELETE_TODO, data -> tableModel.deleteRow((Long) data));
-        eventSubscribers.put(EventType.SWAP_TODO, data -> tableModel.swapRow((List<Integer>) data));
+        eventSubscribers.put(EventType.SWAP_TODO, data -> tableModel.swapRow((List<Todo>) data));
         eventSubscribers.put(EventType.CREATE_PRIORITY, data -> prioritiesModel.addPriority((Priority) data));
         eventSubscribers.put(EventType.UPDATE_PRIORITY, data -> {
             prioritiesModel.updatePriority((Priority) data);
             tableModel.fireTableDataChanged();
         });
         eventSubscribers.put(EventType.DELETE_PRIORITY, data -> prioritiesModel.deletePriority((Long) data));
-        eventPublisher.subscribe(eventSubscribers);
+        EventPublisher.subscribe(eventSubscribers);
     }
 }

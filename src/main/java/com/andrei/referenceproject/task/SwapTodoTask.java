@@ -1,31 +1,36 @@
 package com.andrei.referenceproject.task;
 
 import com.andrei.referenceproject.entity.Todo;
-import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.event.EventType;
 import com.andrei.referenceproject.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class SwapTodoTask extends AbstractTask<List<Todo>> {
     private final TodoService todoService;
-    private final EventPublisher eventPublisher;
+
+    @Override
+    EventType getEventType() {
+        return EventType.SWAP_TODO;
+    }
 
     @Override
     protected List<Todo> perform(Object data) {
         List<Todo> todoList = (List<Todo>) data;
         todoService.swapTodo(todoList.get(0), todoList.get(1));
-        List<Integer> indices = new ArrayList<>();
-        indices.add(todoList.get(0).getOrderNumber().intValue() - 1);
-        indices.add(todoList.get(1).getOrderNumber().intValue() - 1);
-        Collections.sort(indices);
-        eventPublisher.notifySubscribers(EventType.SWAP_TODO, indices);
+        todoList.sort(new Comparator<Todo>() {
+            @Override
+            public int compare(Todo o1, Todo o2) {
+                return o2.getOrderNumber().intValue() - o1.getOrderNumber().intValue();
+            }
+        });
+        Collections.swap(todoList, 0, 1);
         return todoList;
     }
 }

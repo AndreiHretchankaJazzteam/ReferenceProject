@@ -9,9 +9,9 @@ import java.util.Map;
 
 @Component
 public class EventPublisher {
-    private final Map<EventType, List<EventSubscriber>> subscribers = new HashMap<>();
+    private static final Map<EventType, List<EventSubscriber>> subscribers = new HashMap<>();
 
-    public void subscribe(EventType eventType, EventSubscriber eventSubscriber) {
+    public static void subscribe(EventType eventType, EventSubscriber eventSubscriber) {
         List<EventSubscriber> eventSubscribers = subscribers.get(eventType);
         if (eventSubscribers != null) {
             eventSubscribers.add(eventSubscriber);
@@ -22,19 +22,22 @@ public class EventPublisher {
         }
     }
 
-    public void unsubscribe(EventType eventType, EventSubscriber eventSubscriber) {
+    public static void unsubscribe(EventType eventType, EventSubscriber eventSubscriber) {
         subscribers.get(eventType).remove(eventSubscriber);
     }
 
-    public void subscribe(Map<EventType, EventSubscriber> eventSubscribers) {
-        eventSubscribers.forEach(this::subscribe);
+    public static void subscribe(Map<EventType, EventSubscriber> eventSubscribers) {
+        eventSubscribers.forEach(EventPublisher::subscribe);
     }
 
-    public void unsubscribe(Map<EventType, EventSubscriber> eventSubscribers) {
-        eventSubscribers.forEach(this::unsubscribe);
+    public static void unsubscribe(Map<EventType, EventSubscriber> eventSubscribers) {
+        eventSubscribers.forEach(EventPublisher::unsubscribe);
     }
 
-    public void notifySubscribers(EventType eventType, Object data) {
-        subscribers.get(eventType).forEach(eventSubscriber -> eventSubscriber.update(data));
+    public static void notifySubscribers(EventType eventType, Object data) {
+        List<EventSubscriber> eventSubscribers = subscribers.get(eventType);
+        if (eventSubscribers != null) {
+            eventSubscribers.forEach(eventSubscriber -> eventSubscriber.update(data));
+        }
     }
 }

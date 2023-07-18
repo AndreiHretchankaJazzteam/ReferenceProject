@@ -28,8 +28,6 @@ public class TodoFrame extends JFrame {
     private static final String FRAME_TITLE_EDIT = "Edit Todo";
     private static final int FRAME_WIDTH = 600;
     private static final int FRAME_HEIGHT = 500;
-    private final EventPublisher eventPublisher;
-    private final TaskFactory taskFactory;
     private final Map<EventType, EventSubscriber> eventSubscribers = new HashMap<>();
     private DatePicker datePicker;
     private JPanel rootPanel;
@@ -41,14 +39,12 @@ public class TodoFrame extends JFrame {
     private JButton dateButton;
     private Todo todoToUpdate;
 
-    public TodoFrame(EventPublisher eventPublisher, TaskFactory taskFactory) {
-        this(null, eventPublisher, taskFactory);
+    public TodoFrame() {
+        this(null);
     }
 
-    public TodoFrame(Todo todo, EventPublisher eventPublisher, TaskFactory taskFactory) {
+    public TodoFrame(Todo todo) {
         this.todoToUpdate = todo;
-        this.eventPublisher = eventPublisher;
-        this.taskFactory = taskFactory;
         initFrame();
     }
 
@@ -70,18 +66,13 @@ public class TodoFrame extends JFrame {
     }
 
     private void initPriorities() {
-        GetAllPriorityTask getAllPriorityTask = taskFactory.getGetAllPriorityTask();
+        GetAllPriorityTask getAllPriorityTask = TaskFactory.getGetAllPriorityTask();
         getAllPriorityTask.execute(new ArrayList<>(), new TaskListener<>() {
             @Override
             public void onSuccess(List<Priority> priorities) {
                 prioritiesModel = new PriorityComboBoxModel(priorities);
                 priorityComboBox.setModel(prioritiesModel);
                 initFields();
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-
             }
         });
     }
@@ -96,13 +87,8 @@ public class TodoFrame extends JFrame {
             try {
                 Todo todo = createTodoFromFields();
                 if (todoToUpdate == null) {
-                    CreateTodoTask createTodoTask = taskFactory.getCreateTodoTask();
+                    CreateTodoTask createTodoTask = TaskFactory.getCreateTodoTask();
                     createTodoTask.execute(todo, new TaskListener<>() {
-                        @Override
-                        public void onSuccess(Todo todo) {
-
-                        }
-
                         @Override
                         public void onFailure(Exception e) {
                             JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
@@ -110,13 +96,8 @@ public class TodoFrame extends JFrame {
                     });
                 } else {
                     todo.setId(todoToUpdate.getId());
-                    UpdateTodoTask updateTodoTask = taskFactory.getUpdateTodoTask();
+                    UpdateTodoTask updateTodoTask = TaskFactory.getUpdateTodoTask();
                     updateTodoTask.execute(todo, new TaskListener<>() {
-                        @Override
-                        public void onSuccess(Todo todo) {
-
-                        }
-
                         @Override
                         public void onFailure(Exception e) {
                             JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
@@ -134,7 +115,7 @@ public class TodoFrame extends JFrame {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                eventPublisher.unsubscribe(eventSubscribers);
+                EventPublisher.unsubscribe(eventSubscribers);
             }
         });
     }
@@ -182,12 +163,12 @@ public class TodoFrame extends JFrame {
         eventSubscribers.put(EventType.CREATE_PRIORITY, data -> prioritiesModel.addPriority((Priority) data));
         eventSubscribers.put(EventType.UPDATE_PRIORITY, data -> prioritiesModel.updatePriority((Priority) data));
         eventSubscribers.put(EventType.DELETE_PRIORITY, data -> prioritiesModel.deletePriority((Long) data));
-        eventPublisher.subscribe(eventSubscribers);
+        EventPublisher.subscribe(eventSubscribers);
     }
 
     @Override
     public void dispose() {
-        eventPublisher.unsubscribe(eventSubscribers);
+        EventPublisher.unsubscribe(eventSubscribers);
         super.dispose();
     }
 }
