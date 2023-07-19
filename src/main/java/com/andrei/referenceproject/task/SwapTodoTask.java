@@ -10,14 +10,21 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.andrei.referenceproject.activemq.ActiveMQConstants.TODO_TOPIC;
+
 @Component
 @RequiredArgsConstructor
 public class SwapTodoTask extends AbstractTask<List<Todo>> {
     private final TodoService todoService;
 
     @Override
-    EventType getEventType() {
+    protected EventType getEventType() {
         return EventType.SWAP_TODO;
+    }
+
+    @Override
+    protected String getTopicName() {
+        return TODO_TOPIC;
     }
 
     @Override

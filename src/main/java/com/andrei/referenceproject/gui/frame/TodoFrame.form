@@ -83,7 +83,7 @@
               <text value="Date"/>
             </properties>
           </component>
-          <component id="1830a" class="javax.swing.JButton" binding="dateButton">
+          <component id="bb730" class="javax.swing.JButton" binding="dateButton">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
                 <minimum-size width="350" height="-1"/>
@@ -94,7 +94,6 @@
             <properties>
               <background color="-5986391"/>
               <enabled value="false"/>
-              <foreground color="-5986391"/>
               <text value=""/>
             </properties>
           </component>

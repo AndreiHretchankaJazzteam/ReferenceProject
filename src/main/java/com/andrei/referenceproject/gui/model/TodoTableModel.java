@@ -129,8 +129,8 @@ public class TodoTableModel extends AbstractTableModel {
     }
 
     public void swapRow(List<Todo> todoList) {
-        int firstIndex = todoList.get(0).getOrderNumber().intValue() - 1;
-        int secondIndex = todoList.get(1).getOrderNumber().intValue() - 1;
+        int firstIndex = todos.indexOf(todoList.get(1));
+        int secondIndex = todos.indexOf(todoList.get(0));
         Collections.swap(this.todos, firstIndex, secondIndex);
         fireTableRowsUpdated(firstIndex, secondIndex);
     }

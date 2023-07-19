@@ -17,3 +17,7 @@ spring:
     url: jdbc:sqlserver://localhost:1433;databaseName=ReferenceProject;TrustServerCertificate=true;
     username: ${datasource.username}
     password: ${datasource.password}
+    activemq:
+      broker-url: tcp://localhost:61616
+      packages:
+        trust-all: true

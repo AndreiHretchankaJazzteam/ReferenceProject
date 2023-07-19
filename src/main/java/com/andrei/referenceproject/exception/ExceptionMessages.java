@@ -9,4 +9,5 @@ public final class ExceptionMessages {
     public static final String PRIORITY_EXISTED_VALUES_MESSAGE = "Priority fields to save are not unique";
     public static final String DELETE_BEING_USED_PRIORITY_MESSAGE = "There is at least one Todo that uses this priority";
     public static final String DEFAULT_ERROR_MESSAGE = "Program execution error";
+    public static final String EDITABLE_ELEMENT_HAS_BEEN_REMOVED = "Editable element has been removed";
 }

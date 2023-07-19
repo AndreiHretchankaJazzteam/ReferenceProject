@@ -8,7 +8,13 @@ import java.util.concurrent.Executors;
 public abstract class AbstractTask<T> {
     private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-    abstract EventType getEventType();
+    protected EventType getEventType() {
+        return null;
+    }
+
+    protected String getTopicName() {
+        return null;
+    }
 
     protected abstract T perform(Object data);
 
@@ -20,7 +26,7 @@ public abstract class AbstractTask<T> {
         executorService.execute(() -> {
             try {
                 T performed = perform(data);
-                listener.notifySubscribers(getEventType(), performed);
+                listener.notifySubscribers(getTopicName(), performed, getEventType());
                 listener.onSuccess(performed);
             } catch (Exception e) {
                 listener.onFailure(e);

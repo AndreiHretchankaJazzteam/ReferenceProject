@@ -20,8 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.andrei.referenceproject.exception.ExceptionMessages.INVALID_TODO_FIELDS_MESSAGE;
-import static com.andrei.referenceproject.exception.ExceptionMessages.TODO_EXISTED_NAME_VALUES_MESSAGE;
+import static com.andrei.referenceproject.exception.ExceptionMessages.*;
 
 public class TodoFrame extends JFrame {
     private static final String FRAME_TITLE_CREATE = "Create Todo";
@@ -29,7 +28,7 @@ public class TodoFrame extends JFrame {
     private static final int FRAME_WIDTH = 600;
     private static final int FRAME_HEIGHT = 500;
     private final Map<EventType, EventSubscriber> eventSubscribers = new HashMap<>();
-    private DatePicker datePicker;
+    private final DatePicker datePicker = new DatePicker();
     private JPanel rootPanel;
     private JButton acceptButton;
     private JTextArea descriptionTextArea;
@@ -50,9 +49,10 @@ public class TodoFrame extends JFrame {
 
     private void initFrame() {
         initPanel();
-        initPriorities();
         addListeners();
         addSubscribers();
+        initPriorities();
+        initDateField();
     }
 
     private void initPanel() {
@@ -144,15 +144,24 @@ public class TodoFrame extends JFrame {
     }
 
     private void initFields() {
-        datePicker = new DatePicker();
-        datePicker.setDate(LocalDate.now());
-        dateButton.add(datePicker);
-        if (todoToUpdate != null) {
+        if (isForEdit()) {
             nameTextField.setText(todoToUpdate.getName());
             descriptionTextArea.setText(todoToUpdate.getDescription());
             datePicker.setDate(todoToUpdate.getDate());
-            prioritiesModel.setSelectedItem(todoToUpdate.getPriority());
+            dateButton.add(datePicker);
+            if (todoToUpdate.getPriority() != null) {
+                prioritiesModel.setSelectedItem(todoToUpdate.getPriority());
+            }
         }
+    }
+
+    private void initDateField() {
+        if (!isForEdit()) {
+            datePicker.setDate(LocalDate.now());
+        } else {
+            datePicker.setDate(todoToUpdate.getDate());
+        }
+        dateButton.add(datePicker);
     }
 
     private boolean isForEdit() {
@@ -163,6 +172,12 @@ public class TodoFrame extends JFrame {
         eventSubscribers.put(EventType.CREATE_PRIORITY, data -> prioritiesModel.addPriority((Priority) data));
         eventSubscribers.put(EventType.UPDATE_PRIORITY, data -> prioritiesModel.updatePriority((Priority) data));
         eventSubscribers.put(EventType.DELETE_PRIORITY, data -> prioritiesModel.deletePriority((Long) data));
+        eventSubscribers.put(EventType.DELETE_TODO, data -> {
+            if (todoToUpdate.getId().equals(data)) {
+                JOptionPane.showMessageDialog(MainFrame.getWindows()[0], EDITABLE_ELEMENT_HAS_BEEN_REMOVED);
+                dispose();
+            }
+        });
         EventPublisher.subscribe(eventSubscribers);
     }
 
