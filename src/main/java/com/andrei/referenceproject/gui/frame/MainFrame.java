@@ -81,6 +81,7 @@ public class MainFrame extends JFrame {
         tableModel = new TodoTableModel(todos, prioritiesModel);
         todoTable.setModel(tableModel);
         decorateTable();
+        todoTable.changeSelection(0, 0, false, false);
         tableModel.setUpdateValueCallback(todo -> {
             UpdateTodoTask updateTodoTask = TaskFactory.getUpdateTodoTask();
             updateTodoTask.execute(todo, new TaskListener<>() {
@@ -118,6 +119,7 @@ public class MainFrame extends JFrame {
         addDeleteButtonListener();
         addMoveUpButtonListener();
         addMoveDownButtonListener();
+        addTableSelectionListener();
     }
 
     private void addAddButtonListener() {
@@ -155,7 +157,6 @@ public class MainFrame extends JFrame {
                 todoList.add(tableModel.getSelectedTodo(rowTo));
                 SwapTodoTask swapTodoTask = TaskFactory.getSwapTodoTask();
                 swapTodoTask.execute(todoList);
-                todoTable.changeSelection(rowTo, 0, false, false);
             }
         });
     }
@@ -170,20 +171,63 @@ public class MainFrame extends JFrame {
                 todoList.add(tableModel.getSelectedTodo(rowTo));
                 SwapTodoTask swapTodoTask = TaskFactory.getSwapTodoTask();
                 swapTodoTask.execute(todoList);
-                todoTable.changeSelection(rowTo, 0, false, false);
             }
         });
+    }
+
+    private void enableMoveUp(int selectedRow) {
+        moveUpButton.setEnabled(selectedRow > 0);
+    }
+
+    private void enableMoveDown(int selectedRow) {
+        moveDownButton.setEnabled(selectedRow < tableModel.getRowCount() - 1);
     }
 
     private void addPriorityButtonListener() {
         priorityButton.addActionListener(e -> new PriorityFrame());
     }
 
+    private void addTableSelectionListener() {
+        todoTable.getSelectionModel().addListSelectionListener(e -> {
+            int selectedRow = todoTable.getSelectedRow();
+            if (selectedRow != -1) {
+                editButton.setEnabled(true);
+                deleteButton.setEnabled(true);
+                enableMoveUp(selectedRow);
+                enableMoveDown(selectedRow);
+            } else {
+                editButton.setEnabled(false);
+                deleteButton.setEnabled(false);
+                moveUpButton.setEnabled(false);
+                moveDownButton.setEnabled(false);
+            }
+        });
+    }
+
     private void addSubscribers() {
         eventSubscribers.put(EventType.CREATE_TODO, data -> tableModel.addRow((Todo) data));
         eventSubscribers.put(EventType.UPDATE_TODO, data -> tableModel.updateRow((Todo) data));
-        eventSubscribers.put(EventType.DELETE_TODO, data -> tableModel.deleteRow((Long) data));
-        eventSubscribers.put(EventType.SWAP_TODO, data -> tableModel.swapRow((List<Todo>) data));
+        eventSubscribers.put(EventType.DELETE_TODO, data -> {
+            Long id = (Long) data;
+            if (todoTable.getSelectedRow() == tableModel.getRowIndexByTodoId(id)) {
+                todoTable.changeSelection(0, 0, false, false);
+            }
+            tableModel.deleteRow((Long) data);
+        });
+        eventSubscribers.put(EventType.SWAP_TODO, data -> {
+            List<Todo> todoList = (List<Todo>) data;
+            final int row = tableModel.getSwapRowIndex(todoList);
+            final int rowTo = tableModel.getSwapRowToIndex(todoList);
+            final int selected = todoTable.getSelectedRow();
+            tableModel.swapRow(todoList);
+            if (selected == row) {
+                todoTable.changeSelection(rowTo, 0, false, false);
+            } else if (selected == rowTo) {
+                todoTable.changeSelection(row, 0, false, false);
+            } else  {
+                todoTable.changeSelection(selected, 0, false, false);
+            }
+        });
         eventSubscribers.put(EventType.CREATE_PRIORITY, data -> prioritiesModel.addPriority((Priority) data));
         eventSubscribers.put(EventType.UPDATE_PRIORITY, data -> {
             prioritiesModel.updatePriority((Priority) data);
