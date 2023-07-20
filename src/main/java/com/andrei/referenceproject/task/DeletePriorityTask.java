@@ -18,7 +18,7 @@ public class DeletePriorityTask extends AbstractTask<Long> {
     }
 
     @Override
-    EventType getEventType() {
+    protected EventType getEventType() {
         return EventType.DELETE_PRIORITY;
     }
 }

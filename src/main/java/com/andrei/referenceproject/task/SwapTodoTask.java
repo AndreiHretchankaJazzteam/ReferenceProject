@@ -16,7 +16,7 @@ public class SwapTodoTask extends AbstractTask<List<Todo>> {
     private final TodoService todoService;
 
     @Override
-    EventType getEventType() {
+    protected EventType getEventType() {
         return EventType.SWAP_TODO;
     }
 

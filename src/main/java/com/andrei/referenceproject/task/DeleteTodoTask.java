@@ -11,7 +11,7 @@ public class DeleteTodoTask extends AbstractTask<Long> {
     private final TodoService todoService;
 
     @Override
-    EventType getEventType() {
+    protected EventType getEventType() {
         return EventType.DELETE_TODO;
     }
 

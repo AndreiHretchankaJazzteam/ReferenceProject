@@ -14,8 +14,8 @@ public class GetAllPriorityTask extends AbstractTask<List<Priority>> {
     private final PriorityService priorityService;
 
     @Override
-    EventType getEventType() {
-        return EventType.GET_ALL_PRIORITY;
+    protected EventType getEventType() {
+        return null;
     }
 
     @Override

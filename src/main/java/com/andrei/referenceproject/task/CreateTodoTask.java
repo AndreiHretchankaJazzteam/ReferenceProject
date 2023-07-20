@@ -19,7 +19,8 @@ public class CreateTodoTask extends AbstractTask<Todo> {
     }
 
     @Override
-    EventType getEventType() {
+    protected EventType getEventType() {
         return EventType.CREATE_TODO;
     }
+
 }

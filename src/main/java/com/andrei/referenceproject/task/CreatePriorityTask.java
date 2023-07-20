@@ -19,7 +19,7 @@ public class CreatePriorityTask extends AbstractTask<Priority> {
     }
 
     @Override
-    EventType getEventType() {
+    protected EventType getEventType() {
         return EventType.CREATE_PRIORITY;
     }
 }

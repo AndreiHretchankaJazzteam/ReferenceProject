@@ -12,7 +12,7 @@ public class UpdateTodoTask extends AbstractTask<Todo> {
     private final TodoService todoService;
 
     @Override
-    EventType getEventType() {
+    protected EventType getEventType() {
         return EventType.UPDATE_TODO;
     }
 

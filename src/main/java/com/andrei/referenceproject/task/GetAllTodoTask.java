@@ -14,8 +14,8 @@ public class GetAllTodoTask extends AbstractTask<List<Todo>> {
     private final TodoService todoService;
 
     @Override
-    EventType getEventType() {
-        return EventType.GET_ALL_TODO;
+    protected EventType getEventType() {
+        return null;
     }
 
     @Override

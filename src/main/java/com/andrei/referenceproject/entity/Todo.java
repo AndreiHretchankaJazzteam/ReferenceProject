@@ -4,6 +4,7 @@ import com.andrei.referenceproject.util.Utils;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -14,7 +15,7 @@ import java.util.Objects;
 @ToString
 @Entity
 @Table(name = "todo")
-public class Todo {
+public class Todo implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

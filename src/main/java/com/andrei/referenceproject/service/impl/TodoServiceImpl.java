@@ -4,6 +4,7 @@ import com.andrei.referenceproject.entity.Todo;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.repository.TodoRepository;
+import com.andrei.referenceproject.service.PriorityService;
 import com.andrei.referenceproject.service.TodoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -11,16 +12,17 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static com.andrei.referenceproject.exception.ExceptionMessages.TODO_EXISTED_NAME_VALUES_MESSAGE;
-import static com.andrei.referenceproject.exception.ExceptionMessages.TODO_NOT_FOUND_MESSAGE;
+import static com.andrei.referenceproject.exception.ExceptionMessages.*;
 
 @Service
 public class TodoServiceImpl implements TodoService {
     private final TodoRepository todoRepository;
+    private final PriorityService priorityService;
 
     @Autowired
-    public TodoServiceImpl(TodoRepository todoRepository) {
+    public TodoServiceImpl(TodoRepository todoRepository, PriorityService priorityService) {
         this.todoRepository = todoRepository;
+        this.priorityService = priorityService;
     }
 
     @Override
@@ -31,7 +33,12 @@ public class TodoServiceImpl implements TodoService {
                 maxOrderNumber = 0L;
             }
             todo.setOrderNumber(maxOrderNumber + 1);
+            if (todo.getPriority() != null) {
+                priorityService.findPriorityById(todo.getPriority().getId());
+            }
             return todoRepository.save(todo);
+        } catch (ComponentNotFoundException e) {
+            throw new ComponentNotFoundException(PRIORITY_NOT_FOUND_MESSAGE);
         } catch (DataIntegrityViolationException e) {
             throw new ComponentExistedValuesException(TODO_EXISTED_NAME_VALUES_MESSAGE);
         }
@@ -47,7 +54,12 @@ public class TodoServiceImpl implements TodoService {
         try {
             todo.setOrderNumber(findTodoById(id).getOrderNumber());
             todo.setId(id);
+            if (todo.getPriority() != null) {
+                priorityService.findPriorityById(todo.getPriority().getId());
+            }
             return todoRepository.save(todo);
+        } catch (ComponentNotFoundException e) {
+            throw new ComponentNotFoundException(PRIORITY_NOT_FOUND_MESSAGE);
         } catch (DataIntegrityViolationException e) {
             throw new ComponentExistedValuesException(TODO_EXISTED_NAME_VALUES_MESSAGE);
         }

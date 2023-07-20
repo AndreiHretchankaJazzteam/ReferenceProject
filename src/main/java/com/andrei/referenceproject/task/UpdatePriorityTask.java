@@ -12,7 +12,7 @@ public class UpdatePriorityTask extends AbstractTask<Priority> {
     private final PriorityService priorityService;
 
     @Override
-    EventType getEventType() {
+    protected EventType getEventType() {
         return EventType.UPDATE_PRIORITY;
     }
 
