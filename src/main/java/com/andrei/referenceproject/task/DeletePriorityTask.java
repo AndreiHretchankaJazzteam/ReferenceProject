@@ -5,8 +5,6 @@ import com.andrei.referenceproject.service.PriorityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.andrei.referenceproject.activemq.ActiveMQConstants.PRIORITY_TOPIC;
-
 @Component
 @RequiredArgsConstructor
 public class DeletePriorityTask extends AbstractTask<Long> {
@@ -22,10 +20,5 @@ public class DeletePriorityTask extends AbstractTask<Long> {
     @Override
     protected EventType getEventType() {
         return EventType.DELETE_PRIORITY;
-    }
-
-    @Override
-    protected String getTopicName() {
-        return PRIORITY_TOPIC;
     }
 }

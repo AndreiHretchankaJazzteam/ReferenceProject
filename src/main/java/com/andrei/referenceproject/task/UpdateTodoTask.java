@@ -6,8 +6,6 @@ import com.andrei.referenceproject.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.andrei.referenceproject.activemq.ActiveMQConstants.TODO_TOPIC;
-
 @Component
 @RequiredArgsConstructor
 public class UpdateTodoTask extends AbstractTask<Todo> {
@@ -16,11 +14,6 @@ public class UpdateTodoTask extends AbstractTask<Todo> {
     @Override
     protected EventType getEventType() {
         return EventType.UPDATE_TODO;
-    }
-
-    @Override
-    protected String getTopicName() {
-        return TODO_TOPIC;
     }
 
     @Override

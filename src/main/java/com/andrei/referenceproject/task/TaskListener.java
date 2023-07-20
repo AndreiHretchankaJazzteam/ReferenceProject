@@ -19,9 +19,7 @@ public interface TaskListener<T> {
     }
 
     default void notifySubscribers(String topic, T performed, EventType eventType) {
-        if (eventType != null) {
-            MessageProducer.sendMessage(topic, (Serializable) performed, eventType);
-        }
+        MessageProducer.sendMessage(topic, (Serializable) performed, eventType);
     }
 
     static TaskListener createDefaultListener() {

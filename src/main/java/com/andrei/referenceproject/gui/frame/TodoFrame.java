@@ -5,6 +5,8 @@ import com.andrei.referenceproject.entity.Todo;
 import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.event.EventSubscriber;
 import com.andrei.referenceproject.event.EventType;
+import com.andrei.referenceproject.exception.ComponentExistedValuesException;
+import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.exception.InvalidEnteredDataException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.task.*;
@@ -91,7 +93,12 @@ public class TodoFrame extends JFrame {
                     createTodoTask.execute(todo, new TaskListener<>() {
                         @Override
                         public void onFailure(Exception e) {
-                            JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+                            if (e instanceof ComponentNotFoundException) {
+                                JOptionPane.showMessageDialog(TodoFrame.this, SELECTED_PRIORITY_IN_TODO_HAS_BEEN_REMOVED);
+                            }
+                            if (e instanceof ComponentExistedValuesException) {
+                                JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+                            }
                         }
                     });
                 } else {
@@ -100,7 +107,12 @@ public class TodoFrame extends JFrame {
                     updateTodoTask.execute(todo, new TaskListener<>() {
                         @Override
                         public void onFailure(Exception e) {
-                            JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+                            if (e instanceof ComponentNotFoundException) {
+                                JOptionPane.showMessageDialog(TodoFrame.this, SELECTED_PRIORITY_IN_TODO_HAS_BEEN_REMOVED);
+                            }
+                            if (e instanceof ComponentExistedValuesException) {
+                                JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+                            }
                         }
                     });
                 }
@@ -174,7 +186,7 @@ public class TodoFrame extends JFrame {
         eventSubscribers.put(EventType.DELETE_PRIORITY, data -> prioritiesModel.deletePriority((Long) data));
         eventSubscribers.put(EventType.DELETE_TODO, data -> {
             if (todoToUpdate.getId().equals(data)) {
-                JOptionPane.showMessageDialog(MainFrame.getWindows()[0], EDITABLE_ELEMENT_HAS_BEEN_REMOVED);
+                JOptionPane.showMessageDialog(MainFrame.getWindows()[0], SELECTED_ELEMENT_HAS_BEEN_REMOVED);
                 dispose();
             }
         });
