@@ -66,6 +66,8 @@ public class PriorityFrame extends JFrame {
         priorityTableModel = new PriorityTableModel(priorities);
         priorityTable.setModel(priorityTableModel);
         priorityTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        editButton.setEnabled(false);
+        deleteButton.setEnabled(false);
     }
 
     private void addListeners() {
@@ -74,6 +76,7 @@ public class PriorityFrame extends JFrame {
         addEditButtonListener();
         addTableListener();
         addWindowListener();
+        addTableSelectionListener();
     }
 
     private void addTableListener() {
@@ -181,6 +184,22 @@ public class PriorityFrame extends JFrame {
         });
     }
 
+    private void addTableSelectionListener() {
+        priorityTable.getSelectionModel().addListSelectionListener(e -> {
+            int selectedRow = priorityTable.getSelectedRow();
+            if (selectedRow != -1) {
+                addButton.setEnabled(false);
+                editButton.setEnabled(true);
+                deleteButton.setEnabled(true);
+            } else {
+                addButton.setEnabled(true);
+                editButton.setEnabled(false);
+                deleteButton.setEnabled(false);
+
+            }
+        });
+    }
+
     private Priority createPriorityFromFields() {
         validatePriorityFields();
         Priority priority = new Priority();
@@ -223,7 +242,10 @@ public class PriorityFrame extends JFrame {
     private void addSubscribers() {
         eventSubscribers.put(EventType.CREATE_PRIORITY, data -> priorityTableModel.addRow((Priority) data));
         eventSubscribers.put(EventType.UPDATE_PRIORITY, data -> priorityTableModel.updateRow((Priority) data));
-        eventSubscribers.put(EventType.DELETE_PRIORITY, data -> priorityTableModel.deleteRow((Long) data));
+        eventSubscribers.put(EventType.DELETE_PRIORITY, data -> {
+            priorityTableModel.deleteRow((Long) data);
+            clearTextFields();
+        });
         EventPublisher.subscribe(eventSubscribers);
     }
 }

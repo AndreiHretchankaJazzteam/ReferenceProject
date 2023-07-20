@@ -2,12 +2,15 @@ package com.andrei.referenceproject.gui.model;
 
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
+import com.andrei.referenceproject.exception.ComponentNotFoundException;
 
 import javax.swing.table.AbstractTableModel;
 import java.time.LocalDate;
 
 import java.util.*;
 import java.util.function.Consumer;
+
+import static com.andrei.referenceproject.exception.ExceptionMessages.TODO_NOT_FOUND_MESSAGE;
 
 public class TodoTableModel extends AbstractTableModel {
     private static final Map<Integer, String> COLUMNS = new HashMap<>();
@@ -132,7 +135,23 @@ public class TodoTableModel extends AbstractTableModel {
         int firstIndex = todos.indexOf(todoList.get(1));
         int secondIndex = todos.indexOf(todoList.get(0));
         Collections.swap(this.todos, firstIndex, secondIndex);
-        fireTableRowsUpdated(firstIndex, secondIndex);
+        fireTableDataChanged();
+    }
+
+    public int getSwapRowToIndex(List<Todo> todoList) {
+        return todos.indexOf(todoList.get(1));
+    }
+
+    public int getSwapRowIndex(List<Todo> todoList) {
+        return todos.indexOf(todoList.get(0));
+    }
+
+    public int getRowIndexByTodoId(Long id) {
+        Todo todo = todos.stream()
+                .filter(t -> t.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ComponentNotFoundException(TODO_NOT_FOUND_MESSAGE));
+        return todos.indexOf(todo);
     }
 
     public void setUpdateValueCallback(Consumer<Todo> callback) {

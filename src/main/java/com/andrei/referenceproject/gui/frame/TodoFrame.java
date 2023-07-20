@@ -92,6 +92,11 @@ public class TodoFrame extends JFrame {
                     CreateTodoTask createTodoTask = TaskFactory.getCreateTodoTask();
                     createTodoTask.execute(todo, new TaskListener<>() {
                         @Override
+                        public void onSuccess(Todo todo) {
+                            dispose();
+                        }
+
+                        @Override
                         public void onFailure(Exception e) {
                             if (e instanceof ComponentNotFoundException) {
                                 JOptionPane.showMessageDialog(TodoFrame.this, SELECTED_PRIORITY_IN_TODO_HAS_BEEN_REMOVED);
@@ -106,6 +111,11 @@ public class TodoFrame extends JFrame {
                     UpdateTodoTask updateTodoTask = TaskFactory.getUpdateTodoTask();
                     updateTodoTask.execute(todo, new TaskListener<>() {
                         @Override
+                        public void onSuccess(Todo todo) {
+                            dispose();
+                        }
+
+                        @Override
                         public void onFailure(Exception e) {
                             if (e instanceof ComponentNotFoundException) {
                                 JOptionPane.showMessageDialog(TodoFrame.this, SELECTED_PRIORITY_IN_TODO_HAS_BEEN_REMOVED);
@@ -116,7 +126,6 @@ public class TodoFrame extends JFrame {
                         }
                     });
                 }
-                dispose();
             } catch (InvalidEnteredDataException ex) {
                 JOptionPane.showMessageDialog(TodoFrame.this, INVALID_TODO_FIELDS_MESSAGE);
             }
