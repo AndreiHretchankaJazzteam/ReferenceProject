@@ -1,10 +1,13 @@
 package com.andrei.referenceproject.task;
 
+import com.andrei.referenceproject.activemq.MessageProducer;
 import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.event.EventType;
 import com.andrei.referenceproject.gui.frame.MainFrame;
 
 import javax.swing.*;
+
+import java.io.Serializable;
 
 import static com.andrei.referenceproject.exception.ExceptionMessages.DEFAULT_ERROR_MESSAGE;
 
@@ -19,6 +22,10 @@ public interface TaskListener<T> {
 
     default void notifySubscribers(T performed, EventType eventType) {
         EventPublisher.notifySubscribers(eventType, performed);
+    }
+
+    default void notifySubscribers(String topic, T performed, EventType eventType) {
+        MessageProducer.sendMessage(topic, (Serializable) performed, eventType);
     }
 
     static TaskListener createDefaultListener() {

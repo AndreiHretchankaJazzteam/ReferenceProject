@@ -2,6 +2,7 @@ package com.andrei.referenceproject.task;
 
 import com.andrei.referenceproject.service.PriorityService;
 import com.andrei.referenceproject.service.TodoService;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,7 @@ public class TaskFactory {
     @Getter
     private static CreateTodoTask createTodoTask;
 
+    @PostConstruct
     public void initTaskFactory() {
         createPriorityTask = new CreatePriorityTask(priorityService);
         deletePriorityTask = new DeletePriorityTask(priorityService);
