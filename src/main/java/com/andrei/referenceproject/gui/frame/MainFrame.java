@@ -93,6 +93,7 @@ public class MainFrame extends JFrame {
                         FindTodoTask findTodoTask = TaskFactory.getFindTodoTask();
                         findTodoTask.execute(todo, createFindTodoTaskListener());
                         JOptionPane.showMessageDialog(MainFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+                        reloadData();
                     }
                     if (e instanceof ComponentNotFoundException) {
                         JOptionPane.showMessageDialog(MainFrame.this, SELECTED_ELEMENT_HAS_BEEN_REMOVED);

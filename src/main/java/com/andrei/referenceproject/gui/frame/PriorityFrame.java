@@ -5,6 +5,7 @@ import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.event.EventSubscriber;
 import com.andrei.referenceproject.event.EventType;
 import com.andrei.referenceproject.exception.InvalidEnteredDataException;
+import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.gui.model.PriorityTableModel;
 import com.andrei.referenceproject.task.*;
 
@@ -126,6 +127,7 @@ public class PriorityFrame extends JFrame {
                     @Override
                     public void onFailure(Exception e) {
                         JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
+                        reloadPriorities();
                     }
                 });
                 clearTextFields();
@@ -165,6 +167,7 @@ public class PriorityFrame extends JFrame {
                         @Override
                         public void onFailure(Exception e) {
                             JOptionPane.showMessageDialog(PriorityFrame.this, PRIORITY_EXISTED_VALUES_MESSAGE);
+                            reloadPriorities();
                         }
                     });
                     clearTextFields();
@@ -247,5 +250,16 @@ public class PriorityFrame extends JFrame {
             clearTextFields();
         });
         EventPublisher.subscribe(eventSubscribers);
+    }
+
+    private void reloadPriorities() {
+        GetAllPriorityTask getAllPriorityTask = TaskFactory.getGetAllPriorityTask();
+
+        getAllPriorityTask.execute(new ArrayList<>(), new TaskListener<>() {
+            @Override
+            public void onSuccess(List<Priority> priorities) {
+                priorityTableModel.setPriorities(priorities);
+            }
+        });
     }
 }

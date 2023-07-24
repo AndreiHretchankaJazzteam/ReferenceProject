@@ -91,4 +91,10 @@ public class PriorityTableModel extends AbstractTableModel {
     public Priority getSelectedPriority(int index) {
         return priorities.get(index);
     }
+
+    public void setPriorities(List<Priority> priorityList) {
+        this.priorities.clear();
+        this.priorities.addAll(priorityList);
+        fireTableDataChanged();
+    }
 }
