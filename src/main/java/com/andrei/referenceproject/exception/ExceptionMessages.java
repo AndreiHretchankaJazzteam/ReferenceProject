@@ -11,4 +11,6 @@ public final class ExceptionMessages {
     public static final String DEFAULT_ERROR_MESSAGE = "Program execution error";
     public static final String SELECTED_ELEMENT_HAS_BEEN_REMOVED = "Selected element has been removed";
     public static final String SELECTED_PRIORITY_IN_TODO_HAS_BEEN_REMOVED = "Selected priority in todo has been removed";
+    public static final String SELECTED_TODO_HAS_BEEN_REMOVED = "Selected todo has been removed";
+    public static final String ACTION_WITH_NON_ACTUAL_ELEMENT = "Action with non-actual element";
 }

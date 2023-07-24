@@ -77,4 +77,9 @@ public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
                 .findFirst()
                 .orElse(priorities.get(0));
     }
+
+    public void setPriorities(List<Priority> priorities) {
+        this.priorities.clear();
+        this.priorities.addAll(priorities);
+    }
 }

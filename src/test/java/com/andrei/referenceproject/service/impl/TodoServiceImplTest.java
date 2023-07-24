@@ -3,6 +3,7 @@ package com.andrei.referenceproject.service.impl;
 import com.andrei.referenceproject.Application;
 import com.andrei.referenceproject.entity.Priority;
 import com.andrei.referenceproject.entity.Todo;
+import com.andrei.referenceproject.exception.ActionWithNonActualElementException;
 import com.andrei.referenceproject.exception.ComponentExistedValuesException;
 import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.service.TodoService;
@@ -92,6 +93,16 @@ class TodoServiceImplTest {
         List<Todo> actualTodos = todoService.findAllTodos();
 
         assertEquals(expectedTodos, actualTodos);
+    }
+
+    @Test
+    void swapTodoWithNonActualOrderNumberTest() {
+        Todo todoToSwap1 = createFirstTodo();
+        todoToSwap1.setOrderNumber(2L);
+        Todo todoToSwap2 = createSecondTodo();
+        todoToSwap2.setOrderNumber(1L);
+
+        assertThrows(ActionWithNonActualElementException.class, () -> todoService.swapTodo(todoToSwap1, todoToSwap2));
     }
 
     @Test
