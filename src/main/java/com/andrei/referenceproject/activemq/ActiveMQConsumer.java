@@ -19,7 +19,7 @@ import java.util.Objects;
 import static com.andrei.referenceproject.activemq.ActiveMQConstants.*;
 
 @Component
-@Profile("withActiveMQ")
+@Profile({"withActiveMQ", "!test"})
 @RequiredArgsConstructor
 public class ActiveMQConsumer implements MessageListener {
 

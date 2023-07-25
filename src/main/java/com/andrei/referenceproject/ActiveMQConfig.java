@@ -9,7 +9,7 @@ import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.core.JmsTemplate;
 
 @Configuration
-@Profile("withActiveMQ")
+@Profile({"withActiveMQ", "!test"})
 public class ActiveMQConfig {
     @Bean
     public JmsTemplate jmsTemplate(ConnectionFactory connectionFactory) {
