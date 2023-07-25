@@ -5,6 +5,8 @@ import com.andrei.referenceproject.entity.Todo;
 import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.event.EventSubscriber;
 import com.andrei.referenceproject.event.EventType;
+import com.andrei.referenceproject.exception.ComponentExistedValuesException;
+import com.andrei.referenceproject.exception.ComponentNotFoundException;
 import com.andrei.referenceproject.gui.model.PriorityComboBoxModel;
 import com.andrei.referenceproject.gui.model.TodoTableModel;
 import com.andrei.referenceproject.task.*;
@@ -18,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.andrei.referenceproject.exception.ExceptionMessages.TODO_EXISTED_NAME_VALUES_MESSAGE;
+import static com.andrei.referenceproject.exception.ExceptionMessages.*;
 import static com.andrei.referenceproject.gui.model.TodoTableModel.COLUMN_INDEX_PRIORITY;
 
 public class MainFrame extends JFrame {
@@ -87,9 +89,16 @@ public class MainFrame extends JFrame {
             updateTodoTask.execute(todo, new TaskListener<>() {
                 @Override
                 public void onFailure(Exception e) {
-                    FindTodoTask findTodoTask = TaskFactory.getFindTodoTask();
-                    findTodoTask.execute(todo, createFindTodoTaskListener());
-                    JOptionPane.showMessageDialog(MainFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+                    if (e instanceof ComponentExistedValuesException) {
+                        FindTodoTask findTodoTask = TaskFactory.getFindTodoTask();
+                        findTodoTask.execute(todo, createFindTodoTaskListener());
+                        JOptionPane.showMessageDialog(MainFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
+                        reloadData();
+                    }
+                    if (e instanceof ComponentNotFoundException) {
+                        JOptionPane.showMessageDialog(MainFrame.this, SELECTED_ELEMENT_HAS_BEEN_REMOVED);
+                        reloadData();
+                    }
                 }
             });
         });
@@ -131,7 +140,19 @@ public class MainFrame extends JFrame {
             int selectedRow = todoTable.getSelectedRow();
             if (selectedRow != -1) {
                 Todo todo = tableModel.getSelectedTodo(selectedRow);
-                new TodoFrame(todo);
+                FindTodoTask findTodoTask = TaskFactory.getFindTodoTask();
+                findTodoTask.execute(todo, new TaskListener<>() {
+                    @Override
+                    public void onSuccess(Todo todo) {
+                        new TodoFrame(todo);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        JOptionPane.showMessageDialog(MainFrame.this, SELECTED_TODO_HAS_BEEN_REMOVED);
+                        reloadData();
+                    }
+                });
             }
         });
     }
@@ -156,7 +177,13 @@ public class MainFrame extends JFrame {
                 todoList.add(tableModel.getSelectedTodo(selectedRow));
                 todoList.add(tableModel.getSelectedTodo(rowTo));
                 SwapTodoTask swapTodoTask = TaskFactory.getSwapTodoTask();
-                swapTodoTask.execute(todoList);
+                swapTodoTask.execute(todoList, new TaskListener<>() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        JOptionPane.showMessageDialog(MainFrame.this, ACTION_WITH_NON_ACTUAL_ELEMENT);
+                        reloadData();
+                    }
+                });
             }
         });
     }
@@ -170,7 +197,13 @@ public class MainFrame extends JFrame {
                 todoList.add(tableModel.getSelectedTodo(selectedRow));
                 todoList.add(tableModel.getSelectedTodo(rowTo));
                 SwapTodoTask swapTodoTask = TaskFactory.getSwapTodoTask();
-                swapTodoTask.execute(todoList);
+                swapTodoTask.execute(todoList, new TaskListener<>() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        JOptionPane.showMessageDialog(MainFrame.this, ACTION_WITH_NON_ACTUAL_ELEMENT);
+                        reloadData();
+                    }
+                });
             }
         });
     }
@@ -224,7 +257,7 @@ public class MainFrame extends JFrame {
                 todoTable.changeSelection(rowTo, 0, false, false);
             } else if (selected == rowTo) {
                 todoTable.changeSelection(row, 0, false, false);
-            } else  {
+            } else {
                 todoTable.changeSelection(selected, 0, false, false);
             }
         });
@@ -235,5 +268,32 @@ public class MainFrame extends JFrame {
         });
         eventSubscribers.put(EventType.DELETE_PRIORITY, data -> prioritiesModel.deletePriority((Long) data));
         EventPublisher.subscribe(eventSubscribers);
+    }
+
+    private void reloadData() {
+        reloadPriorities();
+        reloadTodos();
+        todoTable.changeSelection(0, 0, false, false);
+    }
+
+    private void reloadPriorities() {
+        GetAllPriorityTask getAllPriorityTask = TaskFactory.getGetAllPriorityTask();
+        getAllPriorityTask.execute(new ArrayList<>(), new TaskListener<>() {
+            @Override
+            public void onSuccess(List<Priority> priorities) {
+                prioritiesModel.setPriorities(priorities);
+                priorityComboBox.setModel(prioritiesModel);
+            }
+        });
+    }
+
+    private void reloadTodos() {
+        GetAllTodoTask getAllTodoTask = TaskFactory.getGetAllTodoTask();
+        getAllTodoTask.execute(new ArrayList<>(), new TaskListener<>() {
+            @Override
+            public void onSuccess(List<Todo> todos) {
+                tableModel.setTodos(todos);
+            }
+        });
     }
 }

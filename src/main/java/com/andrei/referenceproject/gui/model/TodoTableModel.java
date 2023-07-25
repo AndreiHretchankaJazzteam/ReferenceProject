@@ -157,4 +157,10 @@ public class TodoTableModel extends AbstractTableModel {
     public void setUpdateValueCallback(Consumer<Todo> callback) {
         this.updateRowCallback = callback;
     }
+
+    public void setTodos(List<Todo> todos) {
+        this.todos.clear();
+        this.todos.addAll(todos);
+        fireTableDataChanged();
+    }
 }

@@ -2,14 +2,14 @@ package com.andrei.referenceproject.task;
 
 import com.andrei.referenceproject.event.EventType;
 
+import java.awt.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.andrei.referenceproject.activemq.ActiveMQConstants.PRIORITY_TOPIC;
-import static com.andrei.referenceproject.activemq.ActiveMQConstants.TODO_TOPIC;
+import static com.andrei.referenceproject.activemq.ActiveMQConstants.TOPIC;
 
 public abstract class AbstractTask<T> {
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     protected abstract EventType getEventType();
 
@@ -23,28 +23,16 @@ public abstract class AbstractTask<T> {
         executorService.execute(() -> {
             try {
                 T performed = perform(data);
-                if (getEventType() != null) {
-                    listener.notifySubscribers(getTopicName(), performed, getEventType());
-                }
-                listener.onSuccess(performed);
+                EventType eventType = getEventType();
+                EventQueue.invokeLater(() -> {
+                    if (eventType != null) {
+                        listener.notifySubscribers(TOPIC, performed, eventType);
+                    }
+                    listener.onSuccess(performed);
+                });
             } catch (Exception e) {
-                listener.onFailure(e);
+                EventQueue.invokeLater(() -> listener.onFailure(e));
             }
         });
-    }
-
-    private String getTopicName() {
-        switch(getEventType()) {
-            case CREATE_PRIORITY, UPDATE_PRIORITY, DELETE_PRIORITY -> {
-                return PRIORITY_TOPIC;
-            }
-            case CREATE_TODO, UPDATE_TODO, DELETE_TODO, SWAP_TODO -> {
-                return TODO_TOPIC;
-            }
-            default -> {
-                assert false : "add handling for type";
-            }
-        }
-        return null;
     }
 }

@@ -13,6 +13,7 @@ import com.andrei.referenceproject.task.*;
 import com.github.lgooddatepicker.components.DatePicker;
 
 import javax.swing.*;
+import javax.swing.event.ListDataEvent;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -100,6 +101,7 @@ public class TodoFrame extends JFrame {
                         public void onFailure(Exception e) {
                             if (e instanceof ComponentNotFoundException) {
                                 JOptionPane.showMessageDialog(TodoFrame.this, SELECTED_PRIORITY_IN_TODO_HAS_BEEN_REMOVED);
+                                reloadPriorities();
                             }
                             if (e instanceof ComponentExistedValuesException) {
                                 JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
@@ -118,7 +120,8 @@ public class TodoFrame extends JFrame {
                         @Override
                         public void onFailure(Exception e) {
                             if (e instanceof ComponentNotFoundException) {
-                                JOptionPane.showMessageDialog(TodoFrame.this, SELECTED_PRIORITY_IN_TODO_HAS_BEEN_REMOVED);
+                                JOptionPane.showMessageDialog(TodoFrame.this, SELECTED_COMPONENT_HAS_BEEN_REMOVED);
+                                reloadPriorities();
                             }
                             if (e instanceof ComponentExistedValuesException) {
                                 JOptionPane.showMessageDialog(TodoFrame.this, TODO_EXISTED_NAME_VALUES_MESSAGE);
@@ -206,5 +209,16 @@ public class TodoFrame extends JFrame {
     public void dispose() {
         EventPublisher.unsubscribe(eventSubscribers);
         super.dispose();
+    }
+
+    private void reloadPriorities() {
+        GetAllPriorityTask getAllPriorityTask = TaskFactory.getGetAllPriorityTask();
+        getAllPriorityTask.execute(new ArrayList<>(), new TaskListener<>() {
+            @Override
+            public void onSuccess(List<Priority> priorities) {
+                PriorityComboBoxModel priorityComboBoxModel = new PriorityComboBoxModel(priorities);
+                priorityComboBox.setModel(priorityComboBoxModel);
+            }
+        });
     }
 }
