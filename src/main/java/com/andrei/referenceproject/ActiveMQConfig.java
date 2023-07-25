@@ -1,5 +1,6 @@
 package com.andrei.referenceproject;
 
+import com.andrei.referenceproject.activemq.MessageProducer;
 import jakarta.jms.ConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,7 @@ public class ActiveMQConfig {
         JmsTemplate jmsTemplate = new JmsTemplate();
         jmsTemplate.setConnectionFactory(connectionFactory);
         jmsTemplate.setPubSubDomain(true);
+        MessageProducer.setJmsTemplate(jmsTemplate);
         return jmsTemplate;
     }
 

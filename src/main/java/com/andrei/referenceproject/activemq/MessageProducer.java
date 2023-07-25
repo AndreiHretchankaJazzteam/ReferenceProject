@@ -3,6 +3,7 @@ package com.andrei.referenceproject.activemq;
 import com.andrei.referenceproject.ApplicationInformation;
 import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.event.EventType;
+import com.andrei.referenceproject.exception.MessageProducerException;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.ObjectMessage;
@@ -14,6 +15,7 @@ import java.io.Serializable;
 
 import static com.andrei.referenceproject.activemq.ActiveMQConstants.APPLICATION_ID_PROPERTY;
 import static com.andrei.referenceproject.activemq.ActiveMQConstants.EVENT_TYPE_PROPERTY;
+import static com.andrei.referenceproject.exception.ExceptionMessages.ATTEMPT_TO_RESET_JMS_TEMPLATE;
 
 
 public class MessageProducer {
@@ -39,9 +41,11 @@ public class MessageProducer {
         };
     }
 
-    public static void setMessageProducer(JmsTemplate jmsTemplateBean) {
+    public static void setJmsTemplate(JmsTemplate jmsTemplateBean) {
         if (jmsTemplate == null) {
             jmsTemplate = jmsTemplateBean;
+        } else {
+            throw new MessageProducerException(ATTEMPT_TO_RESET_JMS_TEMPLATE);
         }
     }
 }

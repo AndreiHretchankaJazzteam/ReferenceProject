@@ -120,7 +120,7 @@ public class TodoFrame extends JFrame {
                         @Override
                         public void onFailure(Exception e) {
                             if (e instanceof ComponentNotFoundException) {
-                                JOptionPane.showMessageDialog(TodoFrame.this, SELECTED_PRIORITY_IN_TODO_HAS_BEEN_REMOVED);
+                                JOptionPane.showMessageDialog(TodoFrame.this, SELECTED_COMPONENT_HAS_BEEN_REMOVED);
                                 reloadPriorities();
                             }
                             if (e instanceof ComponentExistedValuesException) {
