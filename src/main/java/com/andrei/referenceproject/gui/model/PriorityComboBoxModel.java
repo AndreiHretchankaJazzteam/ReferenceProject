@@ -81,6 +81,5 @@ public class PriorityComboBoxModel implements ComboBoxModel<Priority> {
     public void setPriorities(List<Priority> priorities) {
         this.priorities.clear();
         this.priorities.addAll(priorities);
-
     }
 }

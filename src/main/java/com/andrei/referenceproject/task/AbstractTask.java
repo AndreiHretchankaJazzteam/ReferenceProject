@@ -23,27 +23,15 @@ public abstract class AbstractTask<T> {
         executorService.execute(() -> {
             try {
                 T performed = perform(data);
-                if (getEventType() != null) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.notifySubscribers(TOPIC, performed, getEventType());
-                        }
-                    });
-                }
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onSuccess(performed);
+                EventType eventType = getEventType();
+                EventQueue.invokeLater(() -> {
+                    if (eventType != null) {
+                        listener.notifySubscribers(TOPIC, performed, eventType);
                     }
+                    listener.onSuccess(performed);
                 });
             } catch (Exception e) {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.onFailure(e);
-                    }
-                });
+                EventQueue.invokeLater(() -> listener.onFailure(e));
             }
         });
     }
