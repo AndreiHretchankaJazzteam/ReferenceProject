@@ -20,10 +20,6 @@ public interface TaskListener<T> {
         JOptionPane.showMessageDialog(MainFrame.getWindows()[0], DEFAULT_ERROR_MESSAGE);
     }
 
-    default void notifySubscribers(T performed, EventType eventType) {
-        EventPublisher.notifySubscribers(eventType, performed);
-    }
-
     default void notifySubscribers(String topic, T performed, EventType eventType) {
         MessageProducer.sendMessage(topic, (Serializable) performed, eventType);
     }

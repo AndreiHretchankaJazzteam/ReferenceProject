@@ -3,14 +3,17 @@ package com.andrei.referenceproject;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ApplicationContext;
+
+import javax.management.ObjectInstance;
 
 @SpringBootApplication
 public class Application {
     public static void main(String[] args) {
-        System.setProperty("org.apache.activemq.SERIALIZABLE_PACKAGES","*");
-        new SpringApplicationBuilder(Application.class)
+        System.setProperty("org.apache.activemq.SERIALIZABLE_PACKAGES", "*");
+        ApplicationContext context = new SpringApplicationBuilder(Application.class)
                 .headless(false)
-                .profiles("default")
                 .run(args);
+        context.getId();
     }
 }

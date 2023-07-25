@@ -1,28 +1,29 @@
 package com.andrei.referenceproject.activemq;
 
+import com.andrei.referenceproject.ApplicationInformation;
+import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.event.EventType;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.ObjectMessage;
 import jakarta.jms.Session;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 
+import static com.andrei.referenceproject.activemq.ActiveMQConstants.APPLICATION_ID_PROPERTY;
 import static com.andrei.referenceproject.activemq.ActiveMQConstants.EVENT_TYPE_PROPERTY;
 
-@Component
-@RequiredArgsConstructor
-@Profile("!withoutActiveMQ")
+
 public class MessageProducer {
     private static JmsTemplate jmsTemplate;
 
     public static void sendMessage(String topic, Serializable object, EventType eventType) {
-        jmsTemplate.send(topic, createMessage(object, eventType));
+        EventPublisher.notifySubscribers(eventType, object);
+        if (jmsTemplate != null) {
+            jmsTemplate.send(topic, createMessage(object, eventType));
+        }
     }
 
     private static MessageCreator createMessage(Serializable object, EventType eventType) {
@@ -32,12 +33,15 @@ public class MessageProducer {
                 ObjectMessage message = session.createObjectMessage();
                 message.setObject(object);
                 message.setStringProperty(EVENT_TYPE_PROPERTY, eventType.name());
+                message.setStringProperty(APPLICATION_ID_PROPERTY, ApplicationInformation.getApplicationId());
                 return message;
             }
         };
     }
 
-    public void initMessageProducer(JmsTemplate jmsTemplateBean) {
-        jmsTemplate = jmsTemplateBean;
+    public static void setMessageProducer(JmsTemplate jmsTemplateBean) {
+        if (jmsTemplate == null) {
+            jmsTemplate = jmsTemplateBean;
+        }
     }
 }
