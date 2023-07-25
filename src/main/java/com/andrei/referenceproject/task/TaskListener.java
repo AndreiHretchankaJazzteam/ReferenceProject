@@ -1,12 +1,10 @@
 package com.andrei.referenceproject.task;
 
 import com.andrei.referenceproject.activemq.MessageProducer;
-import com.andrei.referenceproject.event.EventPublisher;
 import com.andrei.referenceproject.event.EventType;
 import com.andrei.referenceproject.gui.frame.MainFrame;
 
 import javax.swing.*;
-
 import java.io.Serializable;
 
 import static com.andrei.referenceproject.exception.ExceptionMessages.DEFAULT_ERROR_MESSAGE;

@@ -6,7 +6,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ContextRefreshedApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
+public class LoadUI implements ApplicationListener<ContextRefreshedEvent> {
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         new MainFrame();

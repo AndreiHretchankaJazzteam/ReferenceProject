@@ -2,6 +2,7 @@ package com.andrei.referenceproject.task;
 
 import com.andrei.referenceproject.event.EventType;
 
+import java.awt.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,11 +24,26 @@ public abstract class AbstractTask<T> {
             try {
                 T performed = perform(data);
                 if (getEventType() != null) {
-                    listener.notifySubscribers(TOPIC, performed, getEventType());
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.notifySubscribers(TOPIC, performed, getEventType());
+                        }
+                    });
                 }
-                listener.onSuccess(performed);
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onSuccess(performed);
+                    }
+                });
             } catch (Exception e) {
-                listener.onFailure(e);
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        listener.onFailure(e);
+                    }
+                });
             }
         });
     }
